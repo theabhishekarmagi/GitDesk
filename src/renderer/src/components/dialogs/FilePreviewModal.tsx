@@ -148,12 +148,12 @@ export const FilePreviewModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-150 select-none">
-      <div className="bg-[#161b22] border border-border rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden text-text-primary">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 animate-in fade-in duration-150 select-none">
+      <div className="bg-[#161b22] rounded-2xl shadow-2xl w-full max-w-5xl max-h-[94vh] flex flex-col overflow-hidden text-text-primary ring-1 ring-white/10">
         {/* Modal Top Header */}
-        <div className="h-14 px-5 border-b border-border/80 flex items-center justify-between bg-surface/50 shrink-0">
+        <div className="h-13 px-4 py-2 flex items-center justify-between bg-[#161b22] shrink-0 border-b border-white/5">
           <div className="flex items-center space-x-3 truncate mr-4">
-            <div className="w-8 h-8 rounded-lg bg-surface-subtle border border-border flex items-center justify-center text-brand-400 shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-brand-400 shrink-0">
               {isPdf ? (
                 <FileText className="w-4 h-4 text-accent-red" />
               ) : isImage ? (
@@ -177,7 +177,7 @@ export const FilePreviewModal: React.FC = () => {
             {textContent && (
               <button
                 onClick={handleCopy}
-                className="flex items-center space-x-1 px-2.5 py-1.5 bg-surface-subtle hover:bg-border text-xs rounded-lg border border-border transition text-text-secondary hover:text-text-primary"
+                className="flex items-center space-x-1 px-2.5 py-1.5 bg-white/5 hover:bg-white/10 text-xs rounded-lg transition text-text-secondary hover:text-text-primary"
                 title="Copy contents"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-accent-green" /> : <Copy className="w-3.5 h-3.5" />}
@@ -196,7 +196,7 @@ export const FilePreviewModal: React.FC = () => {
 
             <button
               onClick={handleOpenGithub}
-              className="p-2 hover:bg-surface-subtle text-text-muted hover:text-text-primary rounded-lg transition"
+              className="p-2 hover:bg-white/5 text-text-muted hover:text-text-primary rounded-lg transition"
               title="Open on GitHub"
             >
               <ExternalLink className="w-4 h-4" />
@@ -204,7 +204,7 @@ export const FilePreviewModal: React.FC = () => {
 
             <button
               onClick={() => setPreviewFile(null)}
-              className="p-2 hover:bg-surface-subtle text-text-muted hover:text-text-primary rounded-lg transition ml-1"
+              className="p-2 hover:bg-white/5 text-text-muted hover:text-text-primary rounded-lg transition ml-1"
               title="Close (Esc)"
             >
               <X className="w-4 h-4" />
@@ -212,15 +212,15 @@ export const FilePreviewModal: React.FC = () => {
           </div>
         </div>
 
-        {/* Modal Body / Preview Canvas */}
-        <div className="flex-1 overflow-auto p-4 flex items-center justify-center min-h-[400px] bg-[#0d1117]/80">
+        {/* Modal Body / Seamless Preview Canvas (No enclosing border container) */}
+        <div className="flex-1 overflow-hidden flex items-center justify-center min-h-[450px] bg-[#0d1117]">
           {isLoadingContent ? (
             <div className="flex flex-col items-center justify-center py-16 text-text-muted">
               <Loader2 className="w-8 h-8 animate-spin text-brand-500 mb-3" />
               <p className="text-xs">Loading file preview...</p>
             </div>
           ) : error ? (
-            <div className="text-center py-12">
+            <div className="text-center py-12 p-4">
               <p className="text-xs text-accent-red mb-3">{error}</p>
               <button
                 onClick={handleDownload}
@@ -233,18 +233,18 @@ export const FilePreviewModal: React.FC = () => {
             <iframe
               src={blobUrl}
               title={file.name}
-              className="w-full h-[70vh] rounded-xl border border-border shadow-inner bg-white"
+              className="w-full h-[82vh] border-0 bg-[#2b2b2b]"
             />
           ) : isImage ? (
-            <div className="flex flex-col items-center justify-center p-4">
+            <div className="flex flex-col items-center justify-center p-6 w-full h-full">
               <img
                 src={file.download_url || undefined}
                 alt={file.name}
-                className="max-h-[68vh] max-w-full rounded-lg object-contain shadow-xl border border-border/60"
+                className="max-h-[80vh] max-w-full rounded-lg object-contain shadow-2xl"
               />
             </div>
           ) : textContent !== null ? (
-            <div className="w-full h-[70vh] bg-[#0d1117] border border-border/80 rounded-xl overflow-auto p-4 select-text">
+            <div className="w-full h-[82vh] bg-[#0d1117] overflow-auto p-6 select-text">
               <pre className="font-mono text-xs leading-relaxed text-[#e6edf3] whitespace-pre-wrap break-all">
                 {textContent}
               </pre>
