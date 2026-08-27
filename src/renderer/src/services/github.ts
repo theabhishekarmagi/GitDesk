@@ -38,14 +38,23 @@ export const GitHubService = {
   // List user repositories
   async listRepositories(): Promise<Repository[]> {
     const client = getOctokit();
-    const response = await client.rest.repos.listForAuthenticatedUser({
+    const response = await client.request('GET /user/repos', {
       sort: 'updated',
       direction: 'desc',
       per_page: 100,
       affiliation: 'owner',
+      t: Date.now(),
+      headers: {
+        'If-None-Match': '',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+      request: {
+        cache: 'no-store',
+      },
     });
 
-    return response.data.map((repo) => ({
+    return response.data.map((repo: any) => ({
       id: repo.id,
       name: repo.name,
       full_name: repo.full_name,
@@ -88,17 +97,27 @@ export const GitHubService = {
   async listContents(owner: string, repo: string, path: string = ''): Promise<FileItem[]> {
     const client = getOctokit();
     try {
-      const response = await client.rest.repos.getContent({
+      const endpoint = path ? 'GET /repos/{owner}/{repo}/contents/{path}' : 'GET /repos/{owner}/{repo}/contents';
+      const response = await client.request(endpoint, {
         owner,
         repo,
-        path,
+        ...(path ? { path } : {}),
+        t: Date.now(),
+        headers: {
+          'If-None-Match': '',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+        request: {
+          cache: 'no-store',
+        },
       });
 
       if (!Array.isArray(response.data)) {
         return [];
       }
 
-      return response.data.map((item) => ({
+      return response.data.map((item: any) => ({
         name: item.name,
         path: item.path,
         sha: item.sha,
@@ -123,7 +142,7 @@ export const GitHubService = {
     base64Content: string,
     message?: string,
     sha?: string
-  ): Promise<{ sha: string; path: string }> {
+  ): Promise<{ sha: string; path: string; download_url: string | null }> {
     const client = getOctokit();
     const commitMessage = message || `Upload ${path.split('/').pop()} via GitVault`;
 
@@ -136,9 +155,11 @@ export const GitHubService = {
       sha, // Required if updating an existing file
     });
 
+    const content = response.data.content;
     return {
-      sha: response.data.content?.sha || '',
-      path: response.data.content?.path || path,
+      sha: content?.sha || '',
+      path: content?.path || path,
+      download_url: content?.download_url || null,
     };
   },
 

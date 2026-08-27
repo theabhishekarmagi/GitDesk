@@ -70,6 +70,8 @@ export const useFileStore = create<FileState>((set, get) => ({
   uploadFiles: async (owner: string, repo: string, uploads: FileUploadPayload[]) => {
     set({ isUploading: true, error: null });
     const currentPath = get().currentPath;
+    const newItems: FileItem[] = [];
+
     try {
       for (let i = 0; i < uploads.length; i++) {
         const item = uploads[i];
@@ -81,7 +83,7 @@ export const useFileStore = create<FileState>((set, get) => ({
 
         // Check if file exists to provide sha
         const existing = get().files.find((f) => f.name === item.name);
-        await GitHubService.uploadFile(
+        const result = await GitHubService.uploadFile(
           owner,
           repo,
           targetPath,
@@ -89,10 +91,34 @@ export const useFileStore = create<FileState>((set, get) => ({
           undefined,
           existing?.sha
         );
+
+        newItems.push({
+          name: item.name,
+          path: targetPath,
+          sha: result.sha,
+          size: item.size,
+          type: 'file',
+          download_url: result.download_url,
+        });
       }
 
-      set({ isUploading: false, uploadStatusText: '' });
-      await get().fetchFiles(owner, repo, currentPath);
+      // Optimistically update the UI so uploaded files appear immediately
+      const remainingFiles = get().files.filter((f) => !newItems.some((n) => n.name === f.name));
+      const merged = [...remainingFiles, ...newItems].sort((a, b) => {
+        if (a.type === b.type) return a.name.localeCompare(b.name);
+        return a.type === 'dir' ? -1 : 1;
+      });
+
+      set({
+        files: merged,
+        isUploading: false,
+        uploadStatusText: '',
+      });
+
+      // Synchronize with GitHub in background
+      setTimeout(async () => {
+        await get().fetchFiles(owner, repo, currentPath);
+      }, 1000);
     } catch (err: any) {
       console.error('Failed to upload files:', err);
       set({
@@ -127,13 +153,19 @@ export const useFileStore = create<FileState>((set, get) => ({
   },
 
   deleteFile: async (owner: string, repo: string, file: FileItem) => {
-    set({ isLoading: true });
+    // Optimistically remove from state immediately
+    const remaining = get().files.filter((f) => f.path !== file.path);
+    set({ files: remaining });
+
     try {
       await GitHubService.deleteFile(owner, repo, file.path, file.sha);
-      await get().fetchFiles(owner, repo, get().currentPath);
+      setTimeout(async () => {
+        await get().fetchFiles(owner, repo, get().currentPath);
+      }, 1000);
     } catch (err: any) {
       console.error('Delete error:', err);
-      set({ isLoading: false, error: err?.message || 'Failed to delete file' });
+      set({ error: err?.message || 'Failed to delete file' });
+      await get().fetchFiles(owner, repo, get().currentPath);
     }
   },
 
