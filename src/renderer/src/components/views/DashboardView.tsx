@@ -115,30 +115,9 @@ export const DashboardView: React.FC = () => {
     >
       {/* Top action row */}
       <div className="flex items-center justify-between mb-5">
-        <div>
-          <h1 className="text-base font-bold text-text-primary flex items-center space-x-2">
-            <span>{viewTitle}</span>
-            {filterMode === 'gitdrive' && (
-              <span className="text-[10px] bg-white/10 text-white/80 border border-white/10 px-2 py-0.5 rounded-full font-medium">
-                Drive Only
-              </span>
-            )}
-          </h1>
-          <p className="text-xs text-text-muted">
-            {filteredRepos.length} {filteredRepos.length === 1 ? 'folder' : 'folders'} available
-            {filterMode === 'gitdrive' && repositories.length > filteredRepos.length && (
-              <span>
-                {' '}•{' '}
-                <button
-                  onClick={() => setFilterMode('all')}
-                  className="text-accent-blue hover:underline"
-                >
-                  View all {repositories.length} repos
-                </button>
-              </span>
-            )}
-          </p>
-        </div>
+        <h1 className="text-base font-bold text-text-primary">
+          {viewTitle}
+        </h1>
 
         <button
           onClick={() => setNewFolderModalOpen(true)}
