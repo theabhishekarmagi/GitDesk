@@ -65,7 +65,7 @@ export const BatchActionBar: React.FC = () => {
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-4 duration-200 select-none">
-      <div className="bg-[#161b22]/95 backdrop-blur-md border border-border/80 shadow-2xl rounded-full px-4 py-2 flex items-center space-x-3 text-text-primary">
+      <div className="bg-[#2c2c2e]/95 backdrop-blur-md border border-white/10 shadow-2xl rounded-full px-4 py-2 flex items-center space-x-3 text-text-primary">
         {/* Count pill */}
         <div className="flex items-center space-x-2 border-r border-border/60 pr-3">
           <button

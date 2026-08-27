@@ -229,9 +229,9 @@ export const FolderView: React.FC = () => {
     >
       {/* Uploading Banner */}
       {isUploading && (
-        <div className="bg-brand-600/90 text-white px-4 py-2 text-xs flex items-center justify-between animate-pulse shrink-0">
+        <div className="bg-brand-500 text-black px-4 py-2 text-xs flex items-center justify-between font-semibold shadow-sm shrink-0">
           <div className="flex items-center space-x-2">
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <Loader2 className="w-3.5 h-3.5 animate-spin stroke-[2.5]" />
             <span>{uploadStatusText || 'Committing file to GitDrive...'}</span>
           </div>
         </div>
@@ -300,13 +300,13 @@ export const FolderView: React.FC = () => {
                   }}
                   className={`group relative flex flex-col items-center cursor-pointer transition select-none p-2.5 rounded-xl ${
                     isSelected
-                      ? 'bg-accent-blue/15 ring-1 ring-accent-blue/40'
-                      : 'hover:bg-surface-subtle/40'
+                      ? 'bg-[#383838] ring-1 ring-white/15'
+                      : 'hover:bg-white/5'
                   }`}
                 >
                   {/* File/Folder Icon (No enclosing box border) */}
                   <div className="mb-2 flex items-center justify-center transition group-hover:scale-105">
-                    <DesktopFileIcon file={file} />
+                    <DesktopFileIcon file={file} size="lg" />
                   </div>
 
                   {/* Centered Filename with macOS Selection Pill */}
@@ -314,7 +314,7 @@ export const FolderView: React.FC = () => {
                     className={`text-[12px] leading-tight text-center max-w-[110px] break-words line-clamp-2 px-1.5 py-0.5 rounded transition ${
                       isSelected
                         ? 'bg-accent-blue text-white font-medium shadow-sm'
-                        : 'text-text-primary group-hover:text-text-primary'
+                        : 'text-text-primary group-hover:text-white'
                     }`}
                     title={file.name}
                   >
@@ -329,7 +329,7 @@ export const FolderView: React.FC = () => {
                   )}
 
                   {/* Quick Action Floating Pill on Hover */}
-                  <div className="absolute -top-2 right-1 opacity-0 group-hover:opacity-100 flex items-center space-x-0.5 bg-[#161b22]/95 backdrop-blur-md border border-border/80 rounded-lg p-1 shadow-lg transition z-10">
+                  <div className="absolute -top-2 right-1 opacity-0 group-hover:opacity-100 flex items-center space-x-0.5 bg-[#2c2c2e]/95 backdrop-blur-md border border-white/10 rounded-lg p-1 shadow-lg transition z-10">
                     {file.type === 'file' && (
                       <button
                         onClick={(e) => {
@@ -428,8 +428,8 @@ export const FolderView: React.FC = () => {
                       }}
                       className={`group cursor-pointer transition rounded-lg ${
                         isSelected
-                          ? 'bg-accent-blue/20 text-text-primary font-medium'
-                          : 'hover:bg-surface-subtle/40'
+                          ? 'bg-[#383838] text-white font-medium shadow-sm'
+                          : 'hover:bg-white/5'
                       }`}
                     >
                       <td className="py-2 px-3 flex items-center space-x-2.5">

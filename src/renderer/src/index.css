@@ -13,12 +13,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #30363d;
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #8b949e;
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* macOS Titlebar Draggable Area */

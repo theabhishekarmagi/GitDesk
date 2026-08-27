@@ -147,7 +147,7 @@ export const RenameModal: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting || !newName.trim()}
-              className="flex items-center space-x-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow transition"
+              className="flex items-center space-x-1.5 px-4 py-2 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-black rounded-lg text-xs font-semibold shadow-sm transition"
             >
               {isSubmitting ? (
                 <>

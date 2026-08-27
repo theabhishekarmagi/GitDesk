@@ -142,15 +142,15 @@ export const DashboardView: React.FC = () => {
 
         <button
           onClick={() => setNewFolderModalOpen(true)}
-          className="flex items-center space-x-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-lg shadow transition"
+          className="flex items-center space-x-1.5 px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-black text-xs font-semibold rounded-lg shadow-sm transition"
         >
-          <FolderPlus className="w-3.5 h-3.5" />
+          <FolderPlus className="w-3.5 h-3.5 stroke-[2.5]" />
           <span>Create Folder</span>
         </button>
       </div>
 
       {filteredRepos.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-border rounded-xl">
+        <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-border/80 rounded-xl">
           <Folder className="w-12 h-12 text-text-muted mb-3 opacity-60" />
           <h3 className="text-sm font-semibold text-text-primary mb-1">
             {searchQuery
@@ -169,9 +169,9 @@ export const DashboardView: React.FC = () => {
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setNewFolderModalOpen(true)}
-              className="flex items-center space-x-1.5 px-3.5 py-1.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium rounded-lg shadow"
+              className="flex items-center space-x-1.5 px-3.5 py-1.5 bg-brand-500 hover:bg-brand-600 text-black text-xs font-semibold rounded-lg shadow-sm"
             >
-              <FolderPlus className="w-3.5 h-3.5" />
+              <FolderPlus className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Create GitDrive Folder</span>
             </button>
             {filterMode === 'gitdrive' && (
@@ -211,8 +211,8 @@ export const DashboardView: React.FC = () => {
                 }}
                 className={`group relative flex flex-col items-center cursor-pointer transition select-none p-2.5 rounded-xl ${
                   isSelected
-                    ? 'bg-accent-blue/15 ring-1 ring-accent-blue/40'
-                    : 'hover:bg-surface-subtle/40'
+                    ? 'bg-[#383838] ring-1 ring-white/15'
+                    : 'hover:bg-white/5'
                 }`}
               >
                 {/* Native Folder SVG Graphic */}
@@ -228,7 +228,7 @@ export const DashboardView: React.FC = () => {
                   className={`text-[12px] leading-tight text-center max-w-[110px] break-words line-clamp-2 px-1.5 py-0.5 rounded transition ${
                     isSelected
                       ? 'bg-accent-blue text-white font-medium shadow-sm'
-                      : 'text-text-primary group-hover:text-text-primary'
+                      : 'text-text-primary group-hover:text-white'
                   }`}
                   title={repo.name}
                 >
@@ -236,7 +236,7 @@ export const DashboardView: React.FC = () => {
                 </span>
 
                 {/* Hover Quick Actions */}
-                <div className="absolute -top-2 right-1 opacity-0 group-hover:opacity-100 flex items-center space-x-0.5 bg-[#161b22]/95 backdrop-blur-md border border-border/80 rounded-lg p-1 shadow-lg transition z-10">
+                <div className="absolute -top-2 right-1 opacity-0 group-hover:opacity-100 flex items-center space-x-0.5 bg-[#2c2c2e]/95 backdrop-blur-md border border-white/10 rounded-lg p-1 shadow-lg transition z-10">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

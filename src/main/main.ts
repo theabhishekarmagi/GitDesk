@@ -26,7 +26,7 @@ function createWindow(): void {
     title: 'GitDrive',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     trafficLightPosition: { x: 16, y: 16 },
-    backgroundColor: '#0d1117',
+    backgroundColor: '#1e1e1e',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,

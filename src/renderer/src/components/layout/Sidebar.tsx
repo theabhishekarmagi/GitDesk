@@ -46,9 +46,9 @@ export const Sidebar: React.FC = () => {
           <button
             onClick={() => setNewFolderModalOpen(true)}
             disabled={!token}
-            className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 disabled:pointer-events-none text-white rounded-lg text-xs font-semibold shadow transition duration-150"
+            className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 disabled:pointer-events-none text-black rounded-lg text-xs font-semibold shadow-sm transition duration-150"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>New Folder</span>
           </button>
 
@@ -63,17 +63,17 @@ export const Sidebar: React.FC = () => {
                 selectRepository(null);
                 setFilterMode('gitdrive');
               }}
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition ${
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition ${
                 currentRepo === null && filterMode === 'gitdrive'
-                  ? 'bg-surface-subtle text-text-primary'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-subtle/50'
+                  ? 'bg-[#383838] text-white shadow-sm'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
               }`}
             >
               <div className="flex items-center space-x-2">
-                <Folder className="w-4 h-4 text-brand-500" />
+                <Folder className="w-4 h-4 text-[#54a3ff]" />
                 <span>GitDrive Folders</span>
               </div>
-              <span className="text-[11px] text-brand-400 bg-brand-500/10 px-1.5 py-0.5 rounded-full border border-brand-500/30 font-medium">
+              <span className="text-[11px] text-brand-400 bg-brand-500/15 px-1.5 py-0.5 rounded-full border border-brand-500/30 font-medium">
                 {gitDriveRepos.length}
               </span>
             </button>
@@ -84,17 +84,17 @@ export const Sidebar: React.FC = () => {
                 selectRepository(null);
                 setFilterMode('all');
               }}
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition ${
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition ${
                 currentRepo === null && filterMode === 'all'
-                  ? 'bg-surface-subtle text-text-primary'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-subtle/50'
+                  ? 'bg-[#383838] text-white shadow-sm'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
               }`}
             >
               <div className="flex items-center space-x-2">
                 <Globe className="w-4 h-4 text-accent-blue" />
                 <span>All Repositories</span>
               </div>
-              <span className="text-[11px] text-text-muted bg-surface/80 px-1.5 py-0.5 rounded-full border border-border/60">
+              <span className="text-[11px] text-text-muted bg-white/5 px-1.5 py-0.5 rounded-full border border-white/10">
                 {repositories.length}
               </span>
             </button>
@@ -105,14 +105,14 @@ export const Sidebar: React.FC = () => {
                 selectRepository(null);
                 setFilterMode('starred');
               }}
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition ${
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition ${
                 currentRepo === null && filterMode === 'starred'
-                  ? 'bg-surface-subtle text-text-primary'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-subtle/50'
+                  ? 'bg-[#383838] text-white shadow-sm'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
               }`}
             >
               <div className="flex items-center space-x-2">
-                <Star className="w-4 h-4 text-accent-amber" />
+                <Star className="w-4 h-4 text-brand-500" />
                 <span>Starred</span>
               </div>
               <span className="text-[11px] text-text-muted">
@@ -126,21 +126,21 @@ export const Sidebar: React.FC = () => {
       {/* Bottom User Card & Storage Meter */}
       <div className="p-3 border-t border-border space-y-3">
         {/* Storage Meter */}
-        <div className="bg-surface-subtle/60 rounded-lg p-2.5 border border-border/60">
-          <div className="flex items-center justify-between text-[11px] text-text-secondary mb-1">
+        <div className="bg-[#262626] rounded-xl p-2.5 border border-white/5">
+          <div className="flex items-center justify-between text-[11px] text-text-secondary mb-1.5">
             <div className="flex items-center space-x-1.5">
               <HardDrive className="w-3.5 h-3.5 text-text-muted" />
               <span>GitHub Storage</span>
             </div>
             <span className="font-mono text-text-primary font-medium">{totalStorageMb} MB</span>
           </div>
-          <div className="w-full bg-border/80 h-1.5 rounded-full overflow-hidden">
+          <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
             <div
               className="bg-brand-500 h-full rounded-full transition-all duration-300"
               style={{ width: `${Math.min((totalStorageKb / (1024 * 1024)) * 100, 100) || 4}%` }}
             />
           </div>
-          <div className="mt-1 flex justify-between items-center text-[10px] text-text-muted">
+          <div className="mt-1.5 flex justify-between items-center text-[10px] text-text-muted">
             <span>Free Tier</span>
             <span>Unlimited repos</span>
           </div>
@@ -148,7 +148,7 @@ export const Sidebar: React.FC = () => {
 
         {/* User profile / Login button */}
         {user ? (
-          <div className="flex items-center justify-between bg-surface-subtle/40 rounded-lg p-2 border border-border/40">
+          <div className="flex items-center justify-between bg-[#262626] rounded-xl p-2 border border-white/5">
             <div className="flex items-center space-x-2.5 min-w-0">
               <img
                 src={user.avatar_url}
@@ -167,7 +167,7 @@ export const Sidebar: React.FC = () => {
             <button
               onClick={() => logout()}
               title="Disconnect GitHub"
-              className="p-1.5 text-text-muted hover:text-accent-red hover:bg-surface rounded transition"
+              className="p-1.5 text-text-muted hover:text-accent-red hover:bg-white/5 rounded-lg transition"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -175,7 +175,7 @@ export const Sidebar: React.FC = () => {
         ) : (
           <button
             onClick={() => setAuthModalOpen(true)}
-            className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-surface-subtle hover:bg-border text-text-primary rounded-lg text-xs font-medium border border-border transition"
+            className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-brand-500 hover:bg-brand-600 text-black rounded-lg text-xs font-semibold shadow-sm transition"
           >
             <Github className="w-4 h-4" />
             <span>Connect GitHub</span>
