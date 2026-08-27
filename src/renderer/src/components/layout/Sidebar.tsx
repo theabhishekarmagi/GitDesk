@@ -1,23 +1,31 @@
 import React from 'react';
 import {
-  FolderGit2,
-  Folder,
-  Star,
   HardDrive,
+  Folder,
+  Globe,
+  Star,
   LogOut,
-  LogIn,
   Plus,
   Github,
-  ShieldCheck,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useFolderStore } from '../../store/folderStore';
 
 export const Sidebar: React.FC = () => {
   const { user, token, logout, setAuthModalOpen } = useAuthStore();
-  const { repositories, selectRepository, setNewFolderModalOpen, currentRepo } = useFolderStore();
+  const {
+    repositories,
+    selectRepository,
+    setNewFolderModalOpen,
+    currentRepo,
+    filterMode,
+    setFilterMode,
+  } = useFolderStore();
 
-  const totalStorageKb = repositories.reduce((acc, repo) => acc + (repo.size || 0), 0);
+  const gitDriveRepos = repositories.filter((r) => r.isGitDrive);
+  const starredRepos = repositories.filter((r) => (r.stargazers_count || 0) > 0);
+
+  const totalStorageKb = gitDriveRepos.reduce((acc, repo) => acc + (repo.size || 0), 0);
   const totalStorageMb = (totalStorageKb / 1024).toFixed(1);
 
   return (
@@ -27,9 +35,9 @@ export const Sidebar: React.FC = () => {
         <div className="titlebar-drag-region h-11 flex items-center px-4 pt-1 border-b border-border/40">
           <div className="titlebar-no-drag flex items-center space-x-2.5 ml-14">
             <div className="w-6 h-6 rounded-md bg-brand-500 flex items-center justify-center text-background font-bold shadow-sm shadow-brand-500/30">
-              <FolderGit2 className="w-4 h-4 text-background" />
+              <HardDrive className="w-3.5 h-3.5 text-background" />
             </div>
-            <span className="font-semibold text-sm tracking-tight text-text-primary">GitVault</span>
+            <span className="font-semibold text-sm tracking-tight text-text-primary">GitDrive</span>
           </div>
         </div>
 
@@ -49,33 +57,66 @@ export const Sidebar: React.FC = () => {
               Storage Views
             </div>
 
+            {/* GitDrive Folders only (Default) */}
             <button
-              onClick={() => selectRepository(null)}
+              onClick={() => {
+                selectRepository(null);
+                setFilterMode('gitdrive');
+              }}
               className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition ${
-                currentRepo === null
+                currentRepo === null && filterMode === 'gitdrive'
                   ? 'bg-surface-subtle text-text-primary'
                   : 'text-text-secondary hover:text-text-primary hover:bg-surface-subtle/50'
               }`}
             >
               <div className="flex items-center space-x-2">
-                <Folder className="w-4 h-4 text-accent-blue" />
-                <span>All Folders</span>
+                <Folder className="w-4 h-4 text-brand-500" />
+                <span>GitDrive Folders</span>
+              </div>
+              <span className="text-[11px] text-brand-400 bg-brand-500/10 px-1.5 py-0.5 rounded-full border border-brand-500/30 font-medium">
+                {gitDriveRepos.length}
+              </span>
+            </button>
+
+            {/* All GitHub Repositories */}
+            <button
+              onClick={() => {
+                selectRepository(null);
+                setFilterMode('all');
+              }}
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition ${
+                currentRepo === null && filterMode === 'all'
+                  ? 'bg-surface-subtle text-text-primary'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-subtle/50'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <Globe className="w-4 h-4 text-accent-blue" />
+                <span>All Repositories</span>
               </div>
               <span className="text-[11px] text-text-muted bg-surface/80 px-1.5 py-0.5 rounded-full border border-border/60">
                 {repositories.length}
               </span>
             </button>
 
+            {/* Starred */}
             <button
-              onClick={() => selectRepository(null)}
-              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-subtle/50 transition"
+              onClick={() => {
+                selectRepository(null);
+                setFilterMode('starred');
+              }}
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition ${
+                currentRepo === null && filterMode === 'starred'
+                  ? 'bg-surface-subtle text-text-primary'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-subtle/50'
+              }`}
             >
               <div className="flex items-center space-x-2">
                 <Star className="w-4 h-4 text-accent-amber" />
                 <span>Starred</span>
               </div>
               <span className="text-[11px] text-text-muted">
-                {repositories.filter((r) => (r.stargazers_count || 0) > 0).length}
+                {starredRepos.length}
               </span>
             </button>
           </div>

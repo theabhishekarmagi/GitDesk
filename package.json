@@ -1,5 +1,5 @@
 {
-  "name": "gitvault",
+  "name": "gitdrive",
   "version": "1.0.0",
   "description": "Desktop application turning GitHub repositories into a personal cloud drive",
   "main": "dist/main/main.js",
@@ -22,7 +22,7 @@
     "react",
     "file-manager"
   ],
-  "author": "GitVault Team",
+  "author": "GitDrive Team",
   "license": "MIT",
   "dependencies": {
     "@octokit/rest": "^20.1.1",

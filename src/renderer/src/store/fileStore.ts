@@ -131,21 +131,22 @@ export const useFileStore = create<FileState>((set, get) => ({
 
   downloadFile: async (owner: string, repo: string, file: FileItem) => {
     try {
-      if (!window.gitvault?.dialog) {
+      const dialogApi = window.gitdrive?.dialog || window.gitvault?.dialog;
+      if (!dialogApi) {
         if (file.download_url) {
           window.open(file.download_url, '_blank');
         }
         return;
       }
 
-      const saveRes = await window.gitvault.dialog.showSaveDialog({
+      const saveRes = await dialogApi.showSaveDialog({
         defaultPath: file.name,
       });
 
       if (saveRes.canceled || !saveRes.filePath) return;
 
       const fileData = await GitHubService.getFileContent(owner, repo, file.path);
-      await window.gitvault.dialog.saveFileToDisk(saveRes.filePath, fileData.content);
+      await dialogApi.saveFileToDisk(saveRes.filePath, fileData.content);
     } catch (err: any) {
       console.error('Download error:', err);
       set({ error: err?.message || 'Failed to download file' });

@@ -7,7 +7,14 @@ const isDev = process.env.NODE_ENV === 'development';
 
 function getTokenStoragePath(): string {
   const userDataPath = app.getPath('userData');
-  return path.join(userDataPath, 'gitvault.token');
+  const drivePath = path.join(userDataPath, 'gitdrive.token');
+  const vaultPath = path.join(userDataPath, 'gitvault.token');
+  if (!fs.existsSync(drivePath) && fs.existsSync(vaultPath)) {
+    try {
+      fs.copyFileSync(vaultPath, drivePath);
+    } catch {}
+  }
+  return drivePath;
 }
 
 function createWindow(): void {
@@ -16,7 +23,7 @@ function createWindow(): void {
     height: 780,
     minWidth: 860,
     minHeight: 560,
-    title: 'GitVault',
+    title: 'GitDrive',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     trafficLightPosition: { x: 16, y: 16 },
     backgroundColor: '#0d1117',
@@ -117,7 +124,7 @@ function setupIpcHandlers() {
 
     const result = await dialog.showOpenDialog(mainWindow, {
       properties: ['openFile', 'multiSelections'],
-      title: 'Select files to upload to GitVault',
+      title: 'Select files to upload to GitDrive',
     });
 
     if (result.canceled || result.filePaths.length === 0) {

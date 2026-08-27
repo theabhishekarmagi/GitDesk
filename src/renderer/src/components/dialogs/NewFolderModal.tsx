@@ -33,7 +33,7 @@ export const NewFolderModal: React.FC = () => {
           </div>
           <div>
             <h2 className="text-base font-semibold">Create New Folder</h2>
-            <p className="text-xs text-text-muted">Creates a dedicated GitHub repository for your files</p>
+            <p className="text-xs text-text-muted">Creates a dedicated GitDrive folder on your GitHub account</p>
           </div>
         </div>
 

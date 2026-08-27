@@ -19,8 +19,9 @@ export const HistoryModal: React.FC = () => {
   const [owner, repoName] = currentRepo.full_name.split('/');
 
   const handleOpenCommit = (url: string) => {
-    if (window.gitvault?.system) {
-      window.gitvault.system.openExternal(url);
+    const sys = window.gitdrive?.system || window.gitvault?.system;
+    if (sys) {
+      sys.openExternal(url);
     } else {
       window.open(url, '_blank');
     }

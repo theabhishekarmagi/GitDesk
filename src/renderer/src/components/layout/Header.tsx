@@ -32,8 +32,9 @@ export const Header: React.FC = () => {
     if (!currentRepo) return;
     const [owner, repoName] = currentRepo.full_name.split('/');
 
-    if (window.gitvault?.dialog) {
-      const res = await window.gitvault.dialog.openFileDialog();
+    const dialogApi = window.gitdrive?.dialog || window.gitvault?.dialog;
+    if (dialogApi) {
+      const res = await dialogApi.openFileDialog();
       if (!res.canceled && res.files.length > 0) {
         await uploadFiles(owner, repoName, res.files);
       }
@@ -81,8 +82,9 @@ export const Header: React.FC = () => {
 
   const handleOpenGithub = () => {
     const url = currentRepo ? currentRepo.html_url : 'https://github.com';
-    if (window.gitvault?.system) {
-      window.gitvault.system.openExternal(url);
+    const sys = window.gitdrive?.system || window.gitvault?.system;
+    if (sys) {
+      sys.openExternal(url);
     } else {
       window.open(url, '_blank');
     }

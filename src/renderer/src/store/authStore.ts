@@ -31,10 +31,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       const user = await GitHubService.getCurrentUser(token);
       
       // Save securely via Electron native Keychain
-      if (window.gitvault?.secureStorage) {
-        await window.gitvault.secureStorage.saveToken(token);
+      const sec = window.gitdrive?.secureStorage || window.gitvault?.secureStorage;
+      if (sec) {
+        await sec.saveToken(token);
       } else {
-        localStorage.setItem('gitvault_pat', token);
+        localStorage.setItem('gitdrive_pat', token);
       }
 
       set({ token, user, isLoading: false, isAuthModalOpen: false, error: null });
@@ -53,9 +54,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     set({ isLoading: true });
     try {
-      if (window.gitvault?.secureStorage) {
-        await window.gitvault.secureStorage.deleteToken();
+      const sec = window.gitdrive?.secureStorage || window.gitvault?.secureStorage;
+      if (sec) {
+        await sec.deleteToken();
       } else {
+        localStorage.removeItem('gitdrive_pat');
         localStorage.removeItem('gitvault_pat');
       }
       clearOctokit();
@@ -70,10 +73,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       let savedToken: string | null = null;
-      if (window.gitvault?.secureStorage) {
-        savedToken = await window.gitvault.secureStorage.getToken();
+      const sec = window.gitdrive?.secureStorage || window.gitvault?.secureStorage;
+      if (sec) {
+        savedToken = await sec.getToken();
       } else {
-        savedToken = localStorage.getItem('gitvault_pat');
+        savedToken = localStorage.getItem('gitdrive_pat') || localStorage.getItem('gitvault_pat');
       }
 
       if (savedToken) {

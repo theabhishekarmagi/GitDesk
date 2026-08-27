@@ -9,6 +9,8 @@ export interface Repository {
   updated_at: string;
   html_url: string;
   stargazers_count?: number;
+  topics?: string[];
+  isGitDrive?: boolean;
 }
 
 export interface FileItem {
@@ -69,6 +71,7 @@ export interface IElectronAPI {
 
 declare global {
   interface Window {
+    gitdrive?: IElectronAPI;
     gitvault?: IElectronAPI;
   }
 }

@@ -18,9 +18,10 @@ export const AuthModal: React.FC = () => {
   };
 
   const handleOpenTokenPage = () => {
-    const url = 'https://github.com/settings/tokens/new?scopes=repo&description=GitVault%20Desktop';
-    if (window.gitvault?.system) {
-      window.gitvault.system.openExternal(url);
+    const url = 'https://github.com/settings/tokens/new?scopes=repo&description=GitDrive%20Desktop';
+    const sys = window.gitdrive?.system || window.gitvault?.system;
+    if (sys) {
+      sys.openExternal(url);
     } else {
       window.open(url, '_blank');
     }

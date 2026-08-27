@@ -23,6 +23,9 @@ export const DashboardView: React.FC = () => {
     selectRepository,
     setNewFolderModalOpen,
     fetchRepositories,
+    filterMode,
+    setFilterMode,
+    markAsGitDrive,
   } = useFolderStore();
 
   useEffect(() => {
@@ -31,10 +34,27 @@ export const DashboardView: React.FC = () => {
     }
   }, [token]);
 
-  const filteredRepos = repositories.filter((repo) =>
-    repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (repo.description && repo.description.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredRepos = repositories.filter((repo) => {
+    const matchesSearch =
+      repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (repo.description && repo.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    if (!matchesSearch) return false;
+
+    if (filterMode === 'gitdrive') {
+      return repo.isGitDrive;
+    }
+    if (filterMode === 'starred') {
+      return (repo.stargazers_count || 0) > 0;
+    }
+    return true;
+  });
+
+  const viewTitle =
+    filterMode === 'gitdrive'
+      ? 'GitDrive Storage Folders'
+      : filterMode === 'starred'
+      ? 'Starred Folders'
+      : 'All GitHub Repositories';
 
   if (!token) {
     return (
@@ -42,7 +62,7 @@ export const DashboardView: React.FC = () => {
         <div className="w-16 h-16 rounded-2xl bg-surface-subtle border border-border flex items-center justify-center mb-4 text-text-muted shadow-lg">
           <Github className="w-8 h-8 text-text-primary" />
         </div>
-        <h2 className="text-lg font-semibold text-text-primary mb-1">Welcome to GitVault</h2>
+        <h2 className="text-lg font-semibold text-text-primary mb-1">Welcome to GitDrive</h2>
         <p className="text-xs text-text-muted max-w-sm mb-6">
           Connect your GitHub account to turn repositories into private, unlimited cloud storage folders.
         </p>
@@ -61,7 +81,7 @@ export const DashboardView: React.FC = () => {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
         <Loader2 className="w-8 h-8 animate-spin text-brand-500 mb-3" />
-        <p className="text-xs text-text-muted">Loading your cloud folders from GitHub...</p>
+        <p className="text-xs text-text-muted">Loading your GitDrive folders from GitHub...</p>
       </div>
     );
   }
@@ -85,17 +105,35 @@ export const DashboardView: React.FC = () => {
       {/* Top action row */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-base font-bold text-text-primary">Storage Folders</h1>
+          <h1 className="text-base font-bold text-text-primary flex items-center space-x-2">
+            <span>{viewTitle}</span>
+            {filterMode === 'gitdrive' && (
+              <span className="text-[10px] bg-brand-500/20 text-brand-400 border border-brand-500/30 px-2 py-0.5 rounded-full font-medium">
+                Drive Only
+              </span>
+            )}
+          </h1>
           <p className="text-xs text-text-muted">
             {filteredRepos.length} {filteredRepos.length === 1 ? 'folder' : 'folders'} available
+            {filterMode === 'gitdrive' && repositories.length > filteredRepos.length && (
+              <span>
+                {' '}•{' '}
+                <button
+                  onClick={() => setFilterMode('all')}
+                  className="text-accent-blue hover:underline"
+                >
+                  View all {repositories.length} repos
+                </button>
+              </span>
+            )}
           </p>
         </div>
 
         <button
           onClick={() => setNewFolderModalOpen(true)}
-          className="flex items-center space-x-1.5 px-3 py-1.5 bg-surface-subtle hover:bg-border text-text-primary text-xs font-medium rounded-lg border border-border transition shadow-sm"
+          className="flex items-center space-x-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-lg shadow transition"
         >
-          <FolderPlus className="w-3.5 h-3.5 text-brand-500" />
+          <FolderPlus className="w-3.5 h-3.5" />
           <span>Create Folder</span>
         </button>
       </div>
@@ -104,75 +142,111 @@ export const DashboardView: React.FC = () => {
         <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-border rounded-xl">
           <Folder className="w-12 h-12 text-text-muted mb-3 opacity-60" />
           <h3 className="text-sm font-semibold text-text-primary mb-1">
-            {searchQuery ? 'No folders match your search' : 'No storage folders yet'}
+            {searchQuery
+              ? 'No folders match your search'
+              : filterMode === 'gitdrive'
+              ? 'No GitDrive folders found yet'
+              : 'No repositories found'}
           </h3>
           <p className="text-xs text-text-muted max-w-xs mb-4">
             {searchQuery
               ? 'Try adjusting your search keywords or clear the filter.'
+              : filterMode === 'gitdrive'
+              ? 'Create a new folder or switch to "All Repositories" to import existing code repos into GitDrive.'
               : 'Create your first folder to begin uploading files to your GitHub drive.'}
           </p>
-          {!searchQuery && (
+          <div className="flex items-center space-x-3">
             <button
               onClick={() => setNewFolderModalOpen(true)}
-              className="flex items-center space-x-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium rounded-lg shadow"
+              className="flex items-center space-x-1.5 px-3.5 py-1.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium rounded-lg shadow"
             >
               <FolderPlus className="w-3.5 h-3.5" />
-              <span>Create First Folder</span>
+              <span>Create GitDrive Folder</span>
             </button>
-          )}
+            {filterMode === 'gitdrive' && (
+              <button
+                onClick={() => setFilterMode('all')}
+                className="px-3.5 py-1.5 bg-surface-subtle hover:bg-border text-text-secondary hover:text-text-primary text-xs font-medium rounded-lg border border-border"
+              >
+                Browse All Repositories
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredRepos.map((repo) => (
-            <div
-              key={repo.id}
-              onClick={() => selectRepository(repo)}
-              className="group bg-surface hover:bg-surface-subtle border border-border hover:border-brand-500/40 rounded-xl p-4 cursor-pointer transition-all duration-150 shadow-sm hover:shadow-md flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-surface-subtle group-hover:bg-brand-500/10 border border-border group-hover:border-brand-500/30 flex items-center justify-center text-accent-blue group-hover:text-brand-500 transition">
-                    <Folder className="w-5 h-5 fill-current/20" />
+          {filteredRepos.map((repo) => {
+            const [owner] = repo.full_name.split('/');
+            return (
+              <div
+                key={repo.id}
+                onClick={() => selectRepository(repo)}
+                className="group bg-surface hover:bg-surface-subtle border border-border hover:border-brand-500/40 rounded-xl p-4 cursor-pointer transition-all duration-150 shadow-sm hover:shadow-md flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-surface-subtle group-hover:bg-brand-500/10 border border-border group-hover:border-brand-500/30 flex items-center justify-center text-accent-blue group-hover:text-brand-500 transition">
+                      <Folder className="w-5 h-5 fill-current/20" />
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      {repo.isGitDrive ? (
+                        <span
+                          title="GitDrive Storage Folder"
+                          className="bg-brand-500/10 text-brand-400 border border-brand-500/30 text-[10px] px-1.5 py-0.5 rounded font-medium"
+                        >
+                          GitDrive
+                        </span>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markAsGitDrive(owner, repo.name);
+                          }}
+                          title="Add to GitDrive storage folders"
+                          className="text-[10px] text-text-muted hover:text-brand-400 bg-surface-subtle hover:bg-brand-500/10 border border-border/80 hover:border-brand-500/30 px-1.5 py-0.5 rounded transition"
+                        >
+                          + GitDrive
+                        </button>
+                      )}
+                      {repo.private ? (
+                        <span title="Private Repository" className="p-1 text-text-muted hover:text-text-secondary">
+                          <Lock className="w-3.5 h-3.5" />
+                        </span>
+                      ) : (
+                        <span title="Public Repository" className="p-1 text-text-muted hover:text-accent-blue">
+                          <Globe className="w-3.5 h-3.5" />
+                        </span>
+                      )}
+                      {(repo.stargazers_count || 0) > 0 && (
+                        <span className="flex items-center text-[10px] text-accent-amber space-x-0.5">
+                          <Star className="w-3 h-3 fill-current" />
+                          <span>{repo.stargazers_count}</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <h3 className="text-xs font-bold text-text-primary group-hover:text-brand-400 transition truncate mb-1">
+                    {repo.name}
+                  </h3>
+                  <p className="text-[11px] text-text-muted line-clamp-2 h-8 leading-4">
+                    {repo.description || 'No description provided'}
+                  </p>
+                </div>
+
+                <div className="pt-3 mt-2 border-t border-border/50 flex items-center justify-between text-[11px] text-text-muted">
+                  <div className="flex items-center space-x-1">
+                    <HardDrive className="w-3 h-3" />
+                    <span>{(repo.size / 1024).toFixed(1)} MB</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    {repo.private ? (
-                      <span title="Private Repository" className="p-1 text-text-muted hover:text-text-secondary">
-                        <Lock className="w-3.5 h-3.5" />
-                      </span>
-                    ) : (
-                      <span title="Public Repository" className="p-1 text-text-muted hover:text-accent-blue">
-                        <Globe className="w-3.5 h-3.5" />
-                      </span>
-                    )}
-                    {(repo.stargazers_count || 0) > 0 && (
-                      <span className="flex items-center text-[10px] text-accent-amber space-x-0.5">
-                        <Star className="w-3 h-3 fill-current" />
-                        <span>{repo.stargazers_count}</span>
-                      </span>
-                    )}
+                    <Clock className="w-3 h-3" />
+                    <span>{new Date(repo.updated_at).toLocaleDateString()}</span>
                   </div>
                 </div>
-
-                <h3 className="text-xs font-bold text-text-primary group-hover:text-brand-400 transition truncate mb-1">
-                  {repo.name}
-                </h3>
-                <p className="text-[11px] text-text-muted line-clamp-2 h-8 leading-4">
-                  {repo.description || 'No description provided'}
-                </p>
               </div>
-
-              <div className="pt-3 mt-2 border-t border-border/50 flex items-center justify-between text-[11px] text-text-muted">
-                <div className="flex items-center space-x-1">
-                  <HardDrive className="w-3 h-3" />
-                  <span>{(repo.size / 1024).toFixed(1)} MB</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Clock className="w-3 h-3" />
-                  <span>{new Date(repo.updated_at).toLocaleDateString()}</span>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

@@ -46,31 +46,56 @@ export const GitHubService = {
       t: Date.now(),
     });
 
-    return response.data.map((repo: any) => ({
-      id: repo.id,
-      name: repo.name,
-      full_name: repo.full_name,
-      private: repo.private,
-      description: repo.description,
-      size: repo.size,
-      default_branch: repo.default_branch,
-      updated_at: repo.updated_at,
-      html_url: repo.html_url,
-      stargazers_count: repo.stargazers_count,
-    }));
+    return response.data.map((repo: any) => {
+      const topics: string[] = repo.topics || [];
+      const desc = repo.description || '';
+      const isGitDrive =
+        topics.includes('gitdrive') ||
+        topics.includes('gitvault') ||
+        /gitdrive|gitvault/i.test(desc) ||
+        repo.name.toLowerCase() === 'test';
+
+      return {
+        id: repo.id,
+        name: repo.name,
+        full_name: repo.full_name,
+        private: repo.private,
+        description: repo.description,
+        size: repo.size,
+        default_branch: repo.default_branch,
+        updated_at: repo.updated_at,
+        html_url: repo.html_url,
+        stargazers_count: repo.stargazers_count,
+        topics,
+        isGitDrive,
+      };
+    });
   },
 
-  // Create repository
+  // Create repository as a GitDrive folder
   async createRepository(name: string, description: string = '', isPrivate: boolean = true): Promise<Repository> {
     const client = getOctokit();
+    const finalDesc = description || '📁 GitDrive Storage Folder';
     const response = await client.rest.repos.createForAuthenticatedUser({
       name,
-      description,
+      description: finalDesc,
       private: isPrivate,
       auto_init: true, // Initialise with README so there's an initial commit
     });
 
     const repo = response.data;
+
+    // Automatically set the 'gitdrive' topic on GitHub
+    try {
+      await client.rest.repos.replaceAllTopics({
+        owner: repo.owner.login,
+        repo: repo.name,
+        names: ['gitdrive'],
+      });
+    } catch (e) {
+      console.warn('Could not set gitdrive topic:', e);
+    }
+
     return {
       id: repo.id,
       name: repo.name,
@@ -82,7 +107,23 @@ export const GitHubService = {
       updated_at: repo.updated_at,
       html_url: repo.html_url,
       stargazers_count: repo.stargazers_count,
+      topics: ['gitdrive'],
+      isGitDrive: true,
     };
+  },
+
+  // Tag an existing repository as a GitDrive folder
+  async markAsGitDrive(owner: string, repo: string): Promise<void> {
+    const client = getOctokit();
+    const repoInfo = await client.rest.repos.get({ owner, repo });
+    const existingTopics = repoInfo.data.topics || [];
+    if (!existingTopics.includes('gitdrive')) {
+      await client.rest.repos.replaceAllTopics({
+        owner,
+        repo,
+        names: [...existingTopics, 'gitdrive'],
+      });
+    }
   },
 
   // List folder/repo contents
@@ -128,7 +169,7 @@ export const GitHubService = {
     sha?: string
   ): Promise<{ sha: string; path: string; download_url: string | null }> {
     const client = getOctokit();
-    const commitMessage = message || `Upload ${path.split('/').pop()} via GitVault`;
+    const commitMessage = message || `Upload ${path.split('/').pop()} via GitDrive`;
 
     const response = await client.rest.repos.createOrUpdateFileContents({
       owner,
@@ -175,7 +216,7 @@ export const GitHubService = {
       owner,
       repo,
       path,
-      message: message || `Delete ${path} via GitVault`,
+      message: message || `Delete ${path} via GitDrive`,
       sha,
     });
   },

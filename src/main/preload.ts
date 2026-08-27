@@ -18,4 +18,5 @@ const api: IElectronAPI = {
   },
 };
 
+contextBridge.exposeInMainWorld('gitdrive', api);
 contextBridge.exposeInMainWorld('gitvault', api);

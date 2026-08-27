@@ -6,27 +6,32 @@ interface FolderState {
   repositories: Repository[];
   currentRepo: Repository | null;
   searchQuery: string;
+  filterMode: 'gitdrive' | 'all' | 'starred';
   isLoading: boolean;
   error: string | null;
   isNewFolderModalOpen: boolean;
 
   setNewFolderModalOpen: (open: boolean) => void;
   setSearchQuery: (query: string) => void;
+  setFilterMode: (mode: 'gitdrive' | 'all' | 'starred') => void;
   selectRepository: (repo: Repository | null) => void;
   fetchRepositories: () => Promise<void>;
   createFolder: (name: string, description?: string, isPrivate?: boolean) => Promise<Repository>;
+  markAsGitDrive: (owner: string, repo: string) => Promise<void>;
 }
 
 export const useFolderStore = create<FolderState>((set, get) => ({
   repositories: [],
   currentRepo: null,
   searchQuery: '',
+  filterMode: 'gitdrive',
   isLoading: false,
   error: null,
   isNewFolderModalOpen: false,
 
   setNewFolderModalOpen: (open: boolean) => set({ isNewFolderModalOpen: open }),
   setSearchQuery: (query: string) => set({ searchQuery: query }),
+  setFilterMode: (mode: 'gitdrive' | 'all' | 'starred') => set({ filterMode: mode }),
   selectRepository: (repo: Repository | null) => set({ currentRepo: repo }),
 
   fetchRepositories: async () => {
@@ -61,6 +66,19 @@ export const useFolderStore = create<FolderState>((set, get) => ({
         error: err?.message || 'Failed to create folder on GitHub',
       });
       throw err;
+    }
+  },
+
+  markAsGitDrive: async (owner: string, repoName: string) => {
+    try {
+      await GitHubService.markAsGitDrive(owner, repoName);
+      set((state) => ({
+        repositories: state.repositories.map((r) =>
+          r.name === repoName ? { ...r, isGitDrive: true, topics: [...(r.topics || []), 'gitdrive'] } : r
+        ),
+      }));
+    } catch (err) {
+      console.error('Failed to mark as GitDrive folder:', err);
     }
   },
 }));
