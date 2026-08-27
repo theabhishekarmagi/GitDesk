@@ -292,9 +292,11 @@ export const FolderView: React.FC = () => {
                   </span>
 
                   {/* Subtitle / File Size */}
-                  <span className="text-[10px] text-text-muted mt-0.5">
-                    {file.type === 'dir' ? 'Folder' : formatFileSize(file.size)}
-                  </span>
+                  {file.type !== 'dir' && (
+                    <span className="text-[10px] text-text-muted mt-0.5">
+                      {formatFileSize(file.size)}
+                    </span>
+                  )}
 
                   {/* Quick Action Floating Pill on Hover */}
                   <div className="absolute -top-2 right-1 opacity-0 group-hover:opacity-100 flex items-center space-x-0.5 bg-[#161b22]/95 backdrop-blur-md border border-border/80 rounded-lg p-1 shadow-lg transition z-10">

@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import {
   Folder,
-  Lock,
   Globe,
   Star,
   Clock,
@@ -222,11 +221,6 @@ export const DashboardView: React.FC = () => {
                     <path d="M4 8C4 5.79086 5.79086 4 8 4H22.3431C23.404 4 24.4214 4.42143 25.1716 5.17157L28.8284 8.82843C29.5786 9.57857 30.596 10 31.6569 10H56C58.2091 10 60 11.7909 60 14V44C60 46.2091 58.2091 48 56 48H8C5.79086 48 4 46.2091 4 44V8Z" />
                     <path d="M4 18C4 15.7909 5.79086 14 8 14H56C58.2091 14 60 15.7909 60 18V44C60 46.2091 58.2091 48 56 48H8C5.79086 48 4 46.2091 4 44V18Z" fill="#79c0ff" />
                   </svg>
-                  {repo.private && (
-                    <div className="absolute bottom-1 right-1 bg-black/50 backdrop-blur-sm p-0.5 rounded text-white/80">
-                      <Lock className="w-2.5 h-2.5" />
-                    </div>
-                  )}
                 </div>
 
                 {/* Centered Folder Name with macOS Selection Pill */}
@@ -239,11 +233,6 @@ export const DashboardView: React.FC = () => {
                   title={repo.name}
                 >
                   {repo.name}
-                </span>
-
-                {/* Subtitle / Storage size */}
-                <span className="text-[10px] text-text-muted mt-0.5">
-                  {(repo.size / 1024).toFixed(1)} MB
                 </span>
 
                 {/* Hover Quick Actions */}
