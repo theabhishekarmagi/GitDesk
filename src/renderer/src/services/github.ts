@@ -44,14 +44,6 @@ export const GitHubService = {
       per_page: 100,
       affiliation: 'owner',
       t: Date.now(),
-      headers: {
-        'If-None-Match': '',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-      },
-      request: {
-        cache: 'no-store',
-      },
     });
 
     return response.data.map((repo: any) => ({
@@ -103,14 +95,6 @@ export const GitHubService = {
         repo,
         ...(path ? { path } : {}),
         t: Date.now(),
-        headers: {
-          'If-None-Match': '',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-        },
-        request: {
-          cache: 'no-store',
-        },
       });
 
       if (!Array.isArray(response.data)) {
