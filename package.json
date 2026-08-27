@@ -1,0 +1,51 @@
+{
+  "name": "gitvault",
+  "version": "1.0.0",
+  "description": "Desktop application turning GitHub repositories into a personal cloud drive",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "dev": "concurrently -k -n \"VITE,MAIN,APP\" -c \"blue,yellow,green\" \"npm run dev:renderer\" \"npm run dev:main\" \"npm run dev:electron\"",
+    "dev:renderer": "vite",
+    "dev:main": "esbuild src/main/main.ts src/main/preload.ts --bundle --platform=node --target=node20 --external:electron --outdir=dist/main --watch",
+    "dev:electron": "wait-on tcp:5173 && wait-on file:dist/main/main.js && cross-env NODE_ENV=development electron .",
+    "build": "npm run build:main && npm run build:renderer",
+    "build:main": "esbuild src/main/main.ts src/main/preload.ts --bundle --platform=node --target=node20 --external:electron --outdir=dist/main",
+    "build:renderer": "vite build",
+    "preview": "vite preview",
+    "start": "cross-env NODE_ENV=production electron ."
+  },
+  "keywords": [
+    "github",
+    "cloud-storage",
+    "electron",
+    "react",
+    "file-manager"
+  ],
+  "author": "GitVault Team",
+  "license": "MIT",
+  "dependencies": {
+    "@octokit/rest": "^20.1.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.428.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.2",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.12",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^31.3.1",
+    "esbuild": "^0.23.1",
+    "postcss": "^8.4.41",
+    "tailwindcss": "^3.4.10",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2",
+    "wait-on": "^7.2.0"
+  }
+}

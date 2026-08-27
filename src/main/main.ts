@@ -1,0 +1,168 @@
+import { app, BrowserWindow, ipcMain, safeStorage, dialog, shell } from 'electron';
+import path from 'path';
+import fs from 'fs';
+
+let mainWindow: BrowserWindow | null = null;
+const isDev = process.env.NODE_ENV === 'development';
+
+function getTokenStoragePath(): string {
+  const userDataPath = app.getPath('userData');
+  return path.join(userDataPath, 'gitvault.token');
+}
+
+function createWindow(): void {
+  mainWindow = new BrowserWindow({
+    width: 1180,
+    height: 780,
+    minWidth: 860,
+    minHeight: 560,
+    title: 'GitVault',
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    trafficLightPosition: { x: 16, y: 16 },
+    backgroundColor: '#0d1117',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: false,
+    },
+  });
+
+  if (isDev) {
+    mainWindow.loadURL('http://localhost:5173');
+    // Open DevTools in dev mode
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
+  } else {
+    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+  }
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+}
+
+// App lifecycle
+app.whenReady().then(() => {
+  setupIpcHandlers();
+  createWindow();
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+// IPC Handlers
+function setupIpcHandlers() {
+  // 1. Secure Token Storage
+  ipcMain.handle('secure-storage:save-token', async (_event, token: string) => {
+    try {
+      const tokenPath = getTokenStoragePath();
+      if (safeStorage.isEncryptionAvailable()) {
+        const encrypted = safeStorage.encryptString(token);
+        await fs.promises.writeFile(tokenPath, encrypted);
+      } else {
+        // Fallback for systems without keychain
+        const base64 = Buffer.from(token).toString('base64');
+        await fs.promises.writeFile(tokenPath, base64, 'utf-8');
+      }
+      return true;
+    } catch (err) {
+      console.error('Failed to save secure token:', err);
+      return false;
+    }
+  });
+
+  ipcMain.handle('secure-storage:get-token', async () => {
+    try {
+      const tokenPath = getTokenStoragePath();
+      if (!fs.existsSync(tokenPath)) {
+        return null;
+      }
+      const raw = await fs.promises.readFile(tokenPath);
+      if (safeStorage.isEncryptionAvailable()) {
+        return safeStorage.decryptString(raw);
+      } else {
+        return Buffer.from(raw.toString('utf-8'), 'base64').toString('utf-8');
+      }
+    } catch (err) {
+      console.error('Failed to retrieve token:', err);
+      return null;
+    }
+  });
+
+  ipcMain.handle('secure-storage:delete-token', async () => {
+    try {
+      const tokenPath = getTokenStoragePath();
+      if (fs.existsSync(tokenPath)) {
+        await fs.promises.unlink(tokenPath);
+      }
+      return true;
+    } catch (err) {
+      console.error('Failed to delete token:', err);
+      return false;
+    }
+  });
+
+  // 2. Native Dialogs & File Handlers
+  ipcMain.handle('dialog:open-files', async () => {
+    if (!mainWindow) return { canceled: true, files: [] };
+
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openFile', 'multiSelections'],
+      title: 'Select files to upload to GitVault',
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+      return { canceled: true, files: [] };
+    }
+
+    const files = await Promise.all(
+      result.filePaths.map(async (filePath) => {
+        const stat = await fs.promises.stat(filePath);
+        const name = path.basename(filePath);
+        const buffer = await fs.promises.readFile(filePath);
+        const base64 = buffer.toString('base64');
+        return {
+          name,
+          path: filePath,
+          size: stat.size,
+          base64,
+        };
+      })
+    );
+
+    return { canceled: false, files };
+  });
+
+  ipcMain.handle('dialog:show-save', async (_event, options: { defaultPath: string }) => {
+    if (!mainWindow) return { canceled: true };
+    const result = await dialog.showSaveDialog(mainWindow, {
+      defaultPath: options.defaultPath,
+    });
+    return { canceled: result.canceled, filePath: result.filePath };
+  });
+
+  ipcMain.handle('dialog:save-file-disk', async (_event, filePath: string, base64Content: string) => {
+    try {
+      const buffer = Buffer.from(base64Content, 'base64');
+      await fs.promises.writeFile(filePath, buffer);
+      return true;
+    } catch (err) {
+      console.error('Failed to save file to disk:', err);
+      return false;
+    }
+  });
+
+  // 3. System External Opener
+  ipcMain.handle('system:open-external', async (_event, url: string) => {
+    await shell.openExternal(url);
+  });
+}
