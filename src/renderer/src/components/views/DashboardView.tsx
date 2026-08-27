@@ -9,6 +9,7 @@ import {
   FolderPlus,
   Github,
   Loader2,
+  Edit2,
 } from 'lucide-react';
 import { useFolderStore } from '../../store/folderStore';
 import { useAuthStore } from '../../store/authStore';
@@ -26,6 +27,10 @@ export const DashboardView: React.FC = () => {
     filterMode,
     setFilterMode,
     markAsGitDrive,
+    selectedRepoIds,
+    toggleSelectRepo,
+    clearRepoSelection,
+    setRenameModalTarget,
   } = useFolderStore();
 
   useEffect(() => {
@@ -101,7 +106,14 @@ export const DashboardView: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 select-none">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          clearRepoSelection();
+        }
+      }}
+      className="flex-1 overflow-y-auto p-6 select-none"
+    >
       {/* Top action row */}
       <div className="flex items-center justify-between mb-5">
         <div>
@@ -174,75 +186,91 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        /* Native macOS Folder Grid */
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              clearRepoSelection();
+            }
+          }}
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-x-4 gap-y-6 select-none"
+        >
           {filteredRepos.map((repo) => {
             const [owner] = repo.full_name.split('/');
+            const isSelected = selectedRepoIds.has(repo.id);
+
             return (
               <div
                 key={repo.id}
-                onClick={() => selectRepository(repo)}
-                className="group bg-surface hover:bg-surface-subtle border border-border hover:border-brand-500/40 rounded-xl p-4 cursor-pointer transition-all duration-150 shadow-sm hover:shadow-md flex flex-col justify-between"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleSelectRepo(repo.id, e.metaKey || e.ctrlKey);
+                }}
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  selectRepository(repo);
+                }}
+                className={`group relative flex flex-col items-center cursor-pointer transition select-none p-2.5 rounded-xl ${
+                  isSelected
+                    ? 'bg-accent-blue/15 ring-1 ring-accent-blue/40'
+                    : 'hover:bg-surface-subtle/40'
+                }`}
               >
-                <div>
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-surface-subtle group-hover:bg-brand-500/10 border border-border group-hover:border-brand-500/30 flex items-center justify-center text-accent-blue group-hover:text-brand-500 transition">
-                      <Folder className="w-5 h-5 fill-current/20" />
+                {/* Native Folder SVG Graphic */}
+                <div className="w-16 h-14 relative flex items-center justify-center filter drop-shadow-md mb-2 transition group-hover:scale-105">
+                  <svg viewBox="0 0 64 52" className="w-16 h-14 text-[#54a3ff] fill-current">
+                    <path d="M4 8C4 5.79086 5.79086 4 8 4H22.3431C23.404 4 24.4214 4.42143 25.1716 5.17157L28.8284 8.82843C29.5786 9.57857 30.596 10 31.6569 10H56C58.2091 10 60 11.7909 60 14V44C60 46.2091 58.2091 48 56 48H8C5.79086 48 4 46.2091 4 44V8Z" />
+                    <path d="M4 18C4 15.7909 5.79086 14 8 14H56C58.2091 14 60 15.7909 60 18V44C60 46.2091 58.2091 48 56 48H8C5.79086 48 4 46.2091 4 44V18Z" fill="#79c0ff" />
+                  </svg>
+                  {repo.private && (
+                    <div className="absolute bottom-1 right-1 bg-black/50 backdrop-blur-sm p-0.5 rounded text-white/80">
+                      <Lock className="w-2.5 h-2.5" />
                     </div>
-                    <div className="flex items-center space-x-1">
-                      {repo.isGitDrive ? (
-                        <span
-                          title="GitDrive Storage Folder"
-                          className="bg-brand-500/10 text-brand-400 border border-brand-500/30 text-[10px] px-1.5 py-0.5 rounded font-medium"
-                        >
-                          GitDrive
-                        </span>
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            markAsGitDrive(owner, repo.name);
-                          }}
-                          title="Add to GitDrive storage folders"
-                          className="text-[10px] text-text-muted hover:text-brand-400 bg-surface-subtle hover:bg-brand-500/10 border border-border/80 hover:border-brand-500/30 px-1.5 py-0.5 rounded transition"
-                        >
-                          + GitDrive
-                        </button>
-                      )}
-                      {repo.private ? (
-                        <span title="Private Repository" className="p-1 text-text-muted hover:text-text-secondary">
-                          <Lock className="w-3.5 h-3.5" />
-                        </span>
-                      ) : (
-                        <span title="Public Repository" className="p-1 text-text-muted hover:text-accent-blue">
-                          <Globe className="w-3.5 h-3.5" />
-                        </span>
-                      )}
-                      {(repo.stargazers_count || 0) > 0 && (
-                        <span className="flex items-center text-[10px] text-accent-amber space-x-0.5">
-                          <Star className="w-3 h-3 fill-current" />
-                          <span>{repo.stargazers_count}</span>
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <h3 className="text-xs font-bold text-text-primary group-hover:text-brand-400 transition truncate mb-1">
-                    {repo.name}
-                  </h3>
-                  <p className="text-[11px] text-text-muted line-clamp-2 h-8 leading-4">
-                    {repo.description || 'No description provided'}
-                  </p>
+                  )}
                 </div>
 
-                <div className="pt-3 mt-2 border-t border-border/50 flex items-center justify-between text-[11px] text-text-muted">
-                  <div className="flex items-center space-x-1">
-                    <HardDrive className="w-3 h-3" />
-                    <span>{(repo.size / 1024).toFixed(1)} MB</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Clock className="w-3 h-3" />
-                    <span>{new Date(repo.updated_at).toLocaleDateString()}</span>
-                  </div>
+                {/* Centered Folder Name with macOS Selection Pill */}
+                <span
+                  className={`text-[12px] leading-tight text-center max-w-[110px] break-words line-clamp-2 px-1.5 py-0.5 rounded transition ${
+                    isSelected
+                      ? 'bg-accent-blue text-white font-medium shadow-sm'
+                      : 'text-text-primary group-hover:text-text-primary'
+                  }`}
+                  title={repo.name}
+                >
+                  {repo.name}
+                </span>
+
+                {/* Subtitle / Storage size */}
+                <span className="text-[10px] text-text-muted mt-0.5">
+                  {(repo.size / 1024).toFixed(1)} MB
+                </span>
+
+                {/* Hover Quick Actions */}
+                <div className="absolute -top-2 right-1 opacity-0 group-hover:opacity-100 flex items-center space-x-0.5 bg-[#161b22]/95 backdrop-blur-md border border-border/80 rounded-lg p-1 shadow-lg transition z-10">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRenameModalTarget({ type: 'folder', repo });
+                    }}
+                    title="Rename Folder"
+                    className="p-1 text-text-muted hover:text-text-primary rounded transition"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </button>
+
+                  {!repo.isGitDrive && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        markAsGitDrive(owner, repo.name);
+                      }}
+                      title="Mark as GitDrive folder"
+                      className="text-[9px] text-brand-400 bg-brand-500/10 border border-brand-500/30 px-1.5 py-0.5 rounded"
+                    >
+                      + Drive
+                    </button>
+                  )}
                 </div>
               </div>
             );

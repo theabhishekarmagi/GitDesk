@@ -238,4 +238,61 @@ export const GitHubService = {
       html_url: c.html_url,
     }));
   },
+
+  // Rename repository (folder)
+  async renameRepository(owner: string, oldName: string, newName: string): Promise<Repository> {
+    const client = getOctokit();
+    const response = await client.rest.repos.update({
+      owner,
+      repo: oldName,
+      name: newName,
+    });
+    const repo = response.data;
+    const topics: string[] = repo.topics || [];
+    return {
+      id: repo.id,
+      name: repo.name,
+      full_name: repo.full_name,
+      private: repo.private,
+      description: repo.description,
+      size: repo.size,
+      default_branch: repo.default_branch,
+      updated_at: repo.updated_at,
+      html_url: repo.html_url,
+      stargazers_count: repo.stargazers_count,
+      topics,
+      isGitDrive: topics.includes('gitdrive') || /gitdrive/i.test(repo.description || ''),
+    };
+  },
+
+  // Rename a file
+  async renameFile(
+    owner: string,
+    repo: string,
+    oldPath: string,
+    newPath: string
+  ): Promise<{ sha: string; path: string; download_url: string | null }> {
+    // 1. Fetch old file's content and SHA
+    const oldFile = await this.getFileContent(owner, repo, oldPath);
+
+    // 2. Create the file at newPath
+    const newFile = await this.uploadFile(
+      owner,
+      repo,
+      newPath,
+      oldFile.content,
+      `Rename ${oldPath.split('/').pop()} to ${newPath.split('/').pop()} via GitDrive`
+    );
+
+    // 3. Delete old file
+    await this.deleteFile(
+      owner,
+      repo,
+      oldPath,
+      oldFile.sha,
+      `Remove ${oldPath} after rename via GitDrive`
+    );
+
+    return newFile;
+  },
 };

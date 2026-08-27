@@ -6,6 +6,9 @@ import { FolderView } from './components/views/FolderView';
 import { AuthModal } from './components/auth/AuthModal';
 import { NewFolderModal } from './components/dialogs/NewFolderModal';
 import { HistoryModal } from './components/dialogs/HistoryModal';
+import { FilePreviewModal } from './components/dialogs/FilePreviewModal';
+import { RenameModal } from './components/dialogs/RenameModal';
+import { BatchActionBar } from './components/layout/BatchActionBar';
 import { useAuthStore } from './store/authStore';
 import { useFolderStore } from './store/folderStore';
 
@@ -34,6 +37,11 @@ export const App: React.FC = () => {
       <AuthModal />
       <NewFolderModal />
       <HistoryModal />
+      <FilePreviewModal />
+      <RenameModal />
+
+      {/* Floating Batch Action Bar */}
+      <BatchActionBar />
     </div>
   );
 };

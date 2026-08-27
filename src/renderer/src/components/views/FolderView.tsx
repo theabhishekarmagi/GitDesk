@@ -1,21 +1,92 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Folder,
-  File,
-  FileText,
-  FileCode,
-  Image as ImageIcon,
-  FileArchive,
   Download,
   Trash2,
   History,
   Upload,
   Loader2,
-  ExternalLink,
+  Edit2,
+  Eye,
+  Check,
 } from 'lucide-react';
 import { useFolderStore } from '../../store/folderStore';
 import { useFileStore } from '../../store/fileStore';
 import { FileItem } from '@shared/types';
+
+// Native macOS / Windows Desktop File Icon component
+const DesktopFileIcon: React.FC<{ file: FileItem }> = ({ file }) => {
+  const ext = file.name.split('.').pop()?.toLowerCase() || '';
+
+  if (file.type === 'dir') {
+    return (
+      <div className="w-16 h-14 relative flex items-center justify-center filter drop-shadow-md">
+        <svg viewBox="0 0 64 52" className="w-16 h-14 text-[#54a3ff] fill-current">
+          <path d="M4 8C4 5.79086 5.79086 4 8 4H22.3431C23.404 4 24.4214 4.42143 25.1716 5.17157L28.8284 8.82843C29.5786 9.57857 30.596 10 31.6569 10H56C58.2091 10 60 11.7909 60 14V44C60 46.2091 58.2091 48 56 48H8C5.79086 48 4 46.2091 4 44V8Z" />
+          <path d="M4 18C4 15.7909 5.79086 14 8 14H56C58.2091 14 60 15.7909 60 18V44C60 46.2091 58.2091 48 56 48H8C5.79086 48 4 46.2091 4 44V18Z" fill="#79c0ff" />
+        </svg>
+      </div>
+    );
+  }
+
+  // Image file preview
+  if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) && file.download_url) {
+    return (
+      <div className="w-14 h-16 rounded-lg bg-white/10 p-1 shadow-lg border border-white/20 flex items-center justify-center overflow-hidden">
+        <img
+          src={file.download_url}
+          alt={file.name}
+          className="w-full h-full object-cover rounded"
+          loading="lazy"
+        />
+      </div>
+    );
+  }
+
+  // Realistic macOS Document Sheet Icon with folded corner
+  return (
+    <div className="w-14 h-16 relative bg-gradient-to-b from-[#ffffff] to-[#e6edf3] rounded-md shadow-md border border-[#d0d7de]/60 flex flex-col justify-between p-2 overflow-hidden select-none">
+      {/* Dog-ear fold top right */}
+      <div className="absolute top-0 right-0 w-3.5 h-3.5 bg-[#cfd7df] shadow-sm [clip-path:polygon(0_0,100%_100%,0_100%)]" />
+
+      {/* Inside document icon lines or badge */}
+      {ext === 'pdf' ? (
+        <div className="flex flex-col h-full justify-between pt-1">
+          <div className="space-y-1 opacity-40">
+            <div className="w-6 h-0.5 bg-gray-700 rounded" />
+            <div className="w-8 h-0.5 bg-gray-700 rounded" />
+            <div className="w-5 h-0.5 bg-gray-700 rounded" />
+          </div>
+          <div className="bg-[#e5534b] text-white font-bold text-[8px] px-1 py-0.5 rounded text-center uppercase tracking-tight shadow-sm">
+            PDF
+          </div>
+        </div>
+      ) : ['js', 'ts', 'jsx', 'tsx', 'py', 'json', 'html', 'css'].includes(ext) ? (
+        <div className="flex flex-col h-full justify-between pt-1">
+          <div className="space-y-1 opacity-50">
+            <div className="w-6 h-0.5 bg-[#0969da] rounded" />
+            <div className="w-7 h-0.5 bg-[#0969da] rounded" />
+            <div className="w-5 h-0.5 bg-[#0969da] rounded" />
+          </div>
+          <div className="bg-[#1f2328] text-[#79c0ff] font-mono font-bold text-[8px] px-1 py-0.5 rounded text-center uppercase shadow-sm">
+            {ext}
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col h-full justify-between pt-1">
+          <div className="space-y-1 opacity-40">
+            <div className="w-6 h-0.5 bg-gray-600 rounded" />
+            <div className="w-8 h-0.5 bg-gray-600 rounded" />
+            <div className="w-5 h-0.5 bg-gray-600 rounded" />
+            <div className="w-7 h-0.5 bg-gray-600 rounded" />
+          </div>
+          <div className="text-[8px] text-gray-500 font-bold uppercase text-center">
+            {ext || 'DOC'}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const FolderView: React.FC = () => {
   const { currentRepo } = useFolderStore();
@@ -33,6 +104,11 @@ export const FolderView: React.FC = () => {
     isUploading,
     uploadStatusText,
     error,
+    selectedFilePaths,
+    toggleSelectFile,
+    clearFileSelection,
+    setPreviewFile,
+    setRenameFileTarget,
   } = useFileStore();
 
   const [isDragOver, setIsDragOver] = useState(false);
@@ -98,30 +174,12 @@ export const FolderView: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
-  const getFileIcon = (item: FileItem) => {
-    if (item.type === 'dir') {
-      return <Folder className="w-5 h-5 text-accent-blue fill-current/20" />;
-    }
-    const ext = item.name.split('.').pop()?.toLowerCase() || '';
-    if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) {
-      return <ImageIcon className="w-5 h-5 text-accent-purple" />;
-    }
-    if (['js', 'ts', 'jsx', 'tsx', 'py', 'json', 'html', 'css', 'go', 'rs'].includes(ext)) {
-      return <FileCode className="w-5 h-5 text-accent-amber" />;
-    }
-    if (['zip', 'tar', 'gz', 'rar', '7z'].includes(ext)) {
-      return <FileArchive className="w-5 h-5 text-accent-red" />;
-    }
-    if (['pdf', 'doc', 'docx', 'txt', 'md'].includes(ext)) {
-      return <FileText className="w-5 h-5 text-brand-500" />;
-    }
-    return <File className="w-5 h-5 text-text-muted" />;
-  };
-
-  const handleItemClick = (item: FileItem) => {
+  const handleItemDoubleClick = (item: FileItem) => {
     if (item.type === 'dir') {
       const nextPath = currentPath ? `${currentPath}/${item.name}` : item.name;
       setCurrentPath(nextPath);
+    } else {
+      setPreviewFile(item);
     }
   };
 
@@ -130,16 +188,21 @@ export const FolderView: React.FC = () => {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          clearFileSelection();
+        }
+      }}
       className={`flex-1 flex flex-col h-full relative overflow-hidden transition-colors ${
         isDragOver ? 'bg-brand-500/5' : 'bg-background'
       }`}
     >
       {/* Uploading Banner */}
       {isUploading && (
-        <div className="bg-brand-600/90 text-white px-4 py-2 text-xs flex items-center justify-between animate-pulse">
+        <div className="bg-brand-600/90 text-white px-4 py-2 text-xs flex items-center justify-between animate-pulse shrink-0">
           <div className="flex items-center space-x-2">
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            <span>{uploadStatusText || 'Committing file to GitHub storage...'}</span>
+            <span>{uploadStatusText || 'Committing file to GitDrive...'}</span>
           </div>
         </div>
       )}
@@ -155,13 +218,20 @@ export const FolderView: React.FC = () => {
 
       {/* Error notification */}
       {error && (
-        <div className="p-3 m-4 mb-0 rounded-lg bg-accent-red/10 border border-accent-red/30 text-xs text-accent-red">
+        <div className="p-3 m-4 mb-0 rounded-lg bg-accent-red/10 border border-accent-red/30 text-xs text-accent-red shrink-0">
           {error}
         </div>
       )}
 
-      {/* File List Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      {/* File Content Area */}
+      <div
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            clearFileSelection();
+          }
+        }}
+        className="flex-1 overflow-y-auto p-6"
+      >
         {isLoading && files.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-text-muted">
             <Loader2 className="w-7 h-7 animate-spin text-brand-500 mb-2" />
@@ -176,65 +246,120 @@ export const FolderView: React.FC = () => {
             </p>
           </div>
         ) : viewMode === 'grid' ? (
-          /* Grid View */
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-            {files.map((file) => (
-              <div
-                key={file.path}
-                onDoubleClick={() => handleItemClick(file)}
-                className="group relative bg-surface hover:bg-surface-subtle border border-border hover:border-border/80 rounded-xl p-3 flex flex-col items-center text-center cursor-pointer transition select-none"
-              >
-                <div className="w-12 h-12 rounded-lg bg-surface-subtle group-hover:bg-surface flex items-center justify-center mb-2 transition">
-                  {getFileIcon(file)}
-                </div>
-
-                <span className="text-xs font-medium text-text-primary truncate w-full mb-1" title={file.name}>
-                  {file.name}
-                </span>
-
-                <span className="text-[10px] text-text-muted">
-                  {file.type === 'dir' ? 'Folder' : formatFileSize(file.size)}
-                </span>
-
-                {/* Hover Quick Actions */}
-                {file.type === 'file' && (
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex items-center space-x-1 bg-surface border border-border rounded-md p-1 shadow-md transition">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        downloadFile(owner, repoName, file);
-                      }}
-                      title="Download"
-                      className="p-1 text-text-muted hover:text-brand-500 rounded transition"
-                    >
-                      <Download className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        viewHistory(owner, repoName, file);
-                      }}
-                      title="Version History"
-                      className="p-1 text-text-muted hover:text-accent-blue rounded transition"
-                    >
-                      <History className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (confirm(`Are you sure you want to delete ${file.name}?`)) {
-                          deleteFile(owner, repoName, file);
-                        }
-                      }}
-                      title="Delete"
-                      className="p-1 text-text-muted hover:text-accent-red rounded transition"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
+          /* Native macOS / Windows Style Borderless Grid View */
+          <div
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                clearFileSelection();
+              }
+            }}
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-x-4 gap-y-6 select-none"
+          >
+            {files.map((file) => {
+              const isSelected = selectedFilePaths.has(file.path);
+              return (
+                <div
+                  key={file.path}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSelectFile(file.path, e.metaKey || e.ctrlKey);
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    handleItemDoubleClick(file);
+                  }}
+                  className={`group relative flex flex-col items-center cursor-pointer transition select-none p-2.5 rounded-xl ${
+                    isSelected
+                      ? 'bg-accent-blue/15 ring-1 ring-accent-blue/40'
+                      : 'hover:bg-surface-subtle/40'
+                  }`}
+                >
+                  {/* File/Folder Icon (No enclosing box border) */}
+                  <div className="mb-2 flex items-center justify-center transition group-hover:scale-105">
+                    <DesktopFileIcon file={file} />
                   </div>
-                )}
-              </div>
-            ))}
+
+                  {/* Centered Filename with macOS Selection Pill */}
+                  <span
+                    className={`text-[12px] leading-tight text-center max-w-[110px] break-words line-clamp-2 px-1.5 py-0.5 rounded transition ${
+                      isSelected
+                        ? 'bg-accent-blue text-white font-medium shadow-sm'
+                        : 'text-text-primary group-hover:text-text-primary'
+                    }`}
+                    title={file.name}
+                  >
+                    {file.name}
+                  </span>
+
+                  {/* Subtitle / File Size */}
+                  <span className="text-[10px] text-text-muted mt-0.5">
+                    {file.type === 'dir' ? 'Folder' : formatFileSize(file.size)}
+                  </span>
+
+                  {/* Quick Action Floating Pill on Hover */}
+                  <div className="absolute -top-2 right-1 opacity-0 group-hover:opacity-100 flex items-center space-x-0.5 bg-[#161b22]/95 backdrop-blur-md border border-border/80 rounded-lg p-1 shadow-lg transition z-10">
+                    {file.type === 'file' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewFile(file);
+                        }}
+                        title="Quick Preview"
+                        className="p-1 text-text-muted hover:text-brand-400 rounded transition"
+                      >
+                        <Eye className="w-3 h-3" />
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRenameFileTarget(file);
+                      }}
+                      title="Rename"
+                      className="p-1 text-text-muted hover:text-text-primary rounded transition"
+                    >
+                      <Edit2 className="w-3 h-3" />
+                    </button>
+                    {file.type === 'file' && (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadFile(owner, repoName, file);
+                          }}
+                          title="Download"
+                          className="p-1 text-text-muted hover:text-brand-500 rounded transition"
+                        >
+                          <Download className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            viewHistory(owner, repoName, file);
+                          }}
+                          title="Version History"
+                          className="p-1 text-text-muted hover:text-accent-blue rounded transition"
+                        >
+                          <History className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm(`Are you sure you want to delete ${file.name}?`)) {
+                              deleteFile(owner, repoName, file);
+                            }
+                          }}
+                          title="Delete"
+                          className="p-1 text-text-muted hover:text-accent-red rounded transition"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
           /* List View */
@@ -245,66 +370,104 @@ export const FolderView: React.FC = () => {
                   <th className="py-2.5 px-4">Name</th>
                   <th className="py-2.5 px-4 w-32">Size</th>
                   <th className="py-2.5 px-4 w-28">Type</th>
-                  <th className="py-2.5 px-4 w-32 text-right">Actions</th>
+                  <th className="py-2.5 px-4 w-36 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {files.map((file) => (
-                  <tr
-                    key={file.path}
-                    onDoubleClick={() => handleItemClick(file)}
-                    className="hover:bg-surface-subtle/60 group cursor-pointer transition"
-                  >
-                    <td className="py-2.5 px-4 flex items-center space-x-2.5">
-                      <div className="shrink-0">{getFileIcon(file)}</div>
-                      <span className="font-medium text-text-primary truncate max-w-md">{file.name}</span>
-                    </td>
-                    <td className="py-2.5 px-4 text-text-muted font-mono">
-                      {file.type === 'dir' ? '—' : formatFileSize(file.size)}
-                    </td>
-                    <td className="py-2.5 px-4 text-text-muted capitalize">{file.type}</td>
-                    <td className="py-2.5 px-4 text-right">
-                      {file.type === 'file' ? (
-                        <div className="flex items-center justify-end space-x-1.5 opacity-0 group-hover:opacity-100 transition">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              downloadFile(owner, repoName, file);
-                            }}
-                            title="Download"
-                            className="p-1 text-text-muted hover:text-brand-500 rounded transition"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              viewHistory(owner, repoName, file);
-                            }}
-                            title="Version History"
-                            className="p-1 text-text-muted hover:text-accent-blue rounded transition"
-                          >
-                            <History className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (confirm(`Are you sure you want to delete ${file.name}?`)) {
-                                deleteFile(owner, repoName, file);
-                              }
-                            }}
-                            title="Delete"
-                            className="p-1 text-text-muted hover:text-accent-red rounded transition"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                {files.map((file) => {
+                  const isSelected = selectedFilePaths.has(file.path);
+                  return (
+                    <tr
+                      key={file.path}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSelectFile(file.path, e.metaKey || e.ctrlKey);
+                      }}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        handleItemDoubleClick(file);
+                      }}
+                      className={`group cursor-pointer transition ${
+                        isSelected
+                          ? 'bg-accent-blue/15 text-text-primary'
+                          : 'hover:bg-surface-subtle/60'
+                      }`}
+                    >
+                      <td className="py-2.5 px-4 flex items-center space-x-2.5">
+                        <div className="w-6 h-6 shrink-0 flex items-center justify-center">
+                          <DesktopFileIcon file={file} />
                         </div>
-                      ) : (
-                        <span className="text-[11px] text-text-muted">Double-click to open</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                        <span className="font-medium text-text-primary truncate max-w-md">{file.name}</span>
+                      </td>
+                      <td className="py-2.5 px-4 text-text-muted font-mono">
+                        {file.type === 'dir' ? '—' : formatFileSize(file.size)}
+                      </td>
+                      <td className="py-2.5 px-4 text-text-muted capitalize">{file.type}</td>
+                      <td className="py-2.5 px-4 text-right">
+                        <div className="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition">
+                          {file.type === 'file' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewFile(file);
+                              }}
+                              title="Preview"
+                              className="p-1 text-text-muted hover:text-brand-400 rounded transition"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setRenameFileTarget(file);
+                            }}
+                            title="Rename"
+                            className="p-1 text-text-muted hover:text-text-primary rounded transition"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          {file.type === 'file' && (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  downloadFile(owner, repoName, file);
+                                }}
+                                title="Download"
+                                className="p-1 text-text-muted hover:text-brand-500 rounded transition"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  viewHistory(owner, repoName, file);
+                                }}
+                                title="Version History"
+                                className="p-1 text-text-muted hover:text-accent-blue rounded transition"
+                              >
+                                <History className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (confirm(`Are you sure you want to delete ${file.name}?`)) {
+                                    deleteFile(owner, repoName, file);
+                                  }
+                                }}
+                                title="Delete"
+                                className="p-1 text-text-muted hover:text-accent-red rounded transition"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

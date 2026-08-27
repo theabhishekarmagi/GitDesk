@@ -6,11 +6,20 @@ interface FileState {
   files: FileItem[];
   currentPath: string;
   selectedFile: FileItem | null;
+  selectedFilePaths: Set<string>;
   viewMode: 'grid' | 'list';
   isLoading: boolean;
   isUploading: boolean;
   uploadStatusText: string;
   error: string | null;
+
+  // File Preview Modal
+  previewFile: FileItem | null;
+  setPreviewFile: (file: FileItem | null) => void;
+
+  // File Rename Modal
+  renameFileTarget: FileItem | null;
+  setRenameFileTarget: (file: FileItem | null) => void;
 
   // Version history modal state
   isHistoryModalOpen: boolean;
@@ -20,6 +29,9 @@ interface FileState {
 
   setViewMode: (mode: 'grid' | 'list') => void;
   setSelectedFile: (file: FileItem | null) => void;
+  toggleSelectFile: (path: string, multi?: boolean) => void;
+  selectAllFiles: () => void;
+  clearFileSelection: () => void;
   setCurrentPath: (path: string) => void;
   setHistoryModalOpen: (open: boolean) => void;
 
@@ -27,6 +39,8 @@ interface FileState {
   uploadFiles: (owner: string, repo: string, uploads: FileUploadPayload[]) => Promise<void>;
   downloadFile: (owner: string, repo: string, file: FileItem) => Promise<void>;
   deleteFile: (owner: string, repo: string, file: FileItem) => Promise<void>;
+  deleteSelectedFiles: (owner: string, repo: string) => Promise<void>;
+  renameFile: (owner: string, repo: string, file: FileItem, newName: string) => Promise<void>;
   viewHistory: (owner: string, repo: string, file: FileItem) => Promise<void>;
   restoreVersion: (owner: string, repo: string, file: FileItem, commitSha: string) => Promise<void>;
 }
@@ -35,11 +49,18 @@ export const useFileStore = create<FileState>((set, get) => ({
   files: [],
   currentPath: '',
   selectedFile: null,
+  selectedFilePaths: new Set<string>(),
   viewMode: 'grid',
   isLoading: false,
   isUploading: false,
   uploadStatusText: '',
   error: null,
+
+  previewFile: null,
+  setPreviewFile: (file) => set({ previewFile: file }),
+
+  renameFileTarget: null,
+  setRenameFileTarget: (file) => set({ renameFileTarget: file }),
 
   isHistoryModalOpen: false,
   historyFile: null,
@@ -48,8 +69,32 @@ export const useFileStore = create<FileState>((set, get) => ({
 
   setViewMode: (mode: 'grid' | 'list') => set({ viewMode: mode }),
   setSelectedFile: (file: FileItem | null) => set({ selectedFile: file }),
-  setCurrentPath: (path: string) => set({ currentPath: path }),
+  setCurrentPath: (path: string) => set({ currentPath: path, selectedFilePaths: new Set() }),
   setHistoryModalOpen: (open: boolean) => set({ isHistoryModalOpen: open }),
+
+  toggleSelectFile: (path: string, multi = false) => {
+    const current = new Set(get().selectedFilePaths);
+    if (!multi) {
+      if (current.has(path) && current.size === 1) {
+        set({ selectedFilePaths: new Set() });
+      } else {
+        set({ selectedFilePaths: new Set([path]) });
+      }
+    } else {
+      if (current.has(path)) {
+        current.delete(path);
+      } else {
+        current.add(path);
+      }
+      set({ selectedFilePaths: new Set(current) });
+    }
+  },
+
+  selectAllFiles: () => {
+    set({ selectedFilePaths: new Set(get().files.map((f) => f.path)) });
+  },
+
+  clearFileSelection: () => set({ selectedFilePaths: new Set() }),
 
   fetchFiles: async (owner: string, repo: string, path: string = '') => {
     set({ isLoading: true, error: null, currentPath: path });
@@ -156,7 +201,9 @@ export const useFileStore = create<FileState>((set, get) => ({
   deleteFile: async (owner: string, repo: string, file: FileItem) => {
     // Optimistically remove from state immediately
     const remaining = get().files.filter((f) => f.path !== file.path);
-    set({ files: remaining });
+    const updatedSelected = new Set(get().selectedFilePaths);
+    updatedSelected.delete(file.path);
+    set({ files: remaining, selectedFilePaths: updatedSelected });
 
     try {
       await GitHubService.deleteFile(owner, repo, file.path, file.sha);
@@ -167,6 +214,55 @@ export const useFileStore = create<FileState>((set, get) => ({
       console.error('Delete error:', err);
       set({ error: err?.message || 'Failed to delete file' });
       await get().fetchFiles(owner, repo, get().currentPath);
+    }
+  },
+
+  deleteSelectedFiles: async (owner: string, repo: string) => {
+    const selectedPaths = get().selectedFilePaths;
+    if (selectedPaths.size === 0) return;
+
+    const filesToDelete = get().files.filter((f) => selectedPaths.has(f.path));
+    const remaining = get().files.filter((f) => !selectedPaths.has(f.path));
+    set({ files: remaining, selectedFilePaths: new Set() });
+
+    try {
+      for (const file of filesToDelete) {
+        await GitHubService.deleteFile(owner, repo, file.path, file.sha);
+      }
+      setTimeout(async () => {
+        await get().fetchFiles(owner, repo, get().currentPath);
+      }, 1000);
+    } catch (err: any) {
+      console.error('Batch delete error:', err);
+      set({ error: err?.message || 'Failed to delete selected files' });
+      await get().fetchFiles(owner, repo, get().currentPath);
+    }
+  },
+
+  renameFile: async (owner: string, repo: string, file: FileItem, newName: string) => {
+    set({ isUploading: true, uploadStatusText: `Renaming ${file.name} to ${newName}...` });
+    const dir = file.path.includes('/') ? file.path.substring(0, file.path.lastIndexOf('/')) : '';
+    const newPath = dir ? `${dir}/${newName}` : newName;
+
+    try {
+      const renamed = await GitHubService.renameFile(owner, repo, file.path, newPath);
+      const updatedFiles = get().files.map((f) =>
+        f.path === file.path
+          ? { ...f, name: newName, path: renamed.path, sha: renamed.sha, download_url: renamed.download_url }
+          : f
+      );
+      set({ files: updatedFiles, isUploading: false, uploadStatusText: '', renameFileTarget: null });
+      setTimeout(async () => {
+        await get().fetchFiles(owner, repo, get().currentPath);
+      }, 1000);
+    } catch (err: any) {
+      console.error('Failed to rename file:', err);
+      set({
+        isUploading: false,
+        uploadStatusText: '',
+        error: err?.message || 'Failed to rename file on GitHub',
+      });
+      throw err;
     }
   },
 
