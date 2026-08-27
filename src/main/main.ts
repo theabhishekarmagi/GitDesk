@@ -32,6 +32,7 @@ function createWindow(): void {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: false,
+      plugins: true,
     },
   });
 
