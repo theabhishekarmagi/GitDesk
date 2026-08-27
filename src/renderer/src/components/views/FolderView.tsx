@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
+  Folder,
+  File,
+  FileText,
+  FileCode,
+  Image as ImageIcon,
+  FileArchive,
   Download,
   Trash2,
   History,
@@ -14,9 +20,33 @@ import { useFileStore } from '../../store/fileStore';
 import { FileItem } from '@shared/types';
 
 // Native macOS / Windows Desktop File Icon component
-const DesktopFileIcon: React.FC<{ file: FileItem }> = ({ file }) => {
+const DesktopFileIcon: React.FC<{ file: FileItem; size?: 'sm' | 'lg' }> = ({ file, size = 'lg' }) => {
   const ext = file.name.split('.').pop()?.toLowerCase() || '';
 
+  // Compact icon for List View
+  if (size === 'sm') {
+    if (file.type === 'dir') {
+      return <Folder className="w-4 h-4 text-[#54a3ff] fill-current/30 shrink-0" />;
+    }
+    if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext)) {
+      return <ImageIcon className="w-4 h-4 text-[#a371f7] shrink-0" />;
+    }
+    if (['js', 'ts', 'jsx', 'tsx', 'py', 'json', 'html', 'css', 'go', 'rs', 'c', 'cpp'].includes(ext)) {
+      return <FileCode className="w-4 h-4 text-[#79c0ff] shrink-0" />;
+    }
+    if (['zip', 'tar', 'gz', 'rar', '7z'].includes(ext)) {
+      return <FileArchive className="w-4 h-4 text-[#f0883e] shrink-0" />;
+    }
+    if (ext === 'pdf') {
+      return <FileText className="w-4 h-4 text-[#e5534b] shrink-0" />;
+    }
+    if (ext === 'md') {
+      return <FileText className="w-4 h-4 text-[#58a6ff] shrink-0" />;
+    }
+    return <File className="w-4 h-4 text-text-muted shrink-0" />;
+  }
+
+  // Large desktop icon for Grid View
   if (file.type === 'dir') {
     return (
       <div className="w-16 h-14 relative flex items-center justify-center filter drop-shadow-md">
@@ -364,18 +394,25 @@ export const FolderView: React.FC = () => {
             })}
           </div>
         ) : (
-          /* List View */
-          <div className="border border-border rounded-xl overflow-hidden bg-surface">
+          /* List View - Completely Borderless Finder Style */
+          <div
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                clearFileSelection();
+              }
+            }}
+            className="w-full select-none"
+          >
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-surface-subtle/50 text-[11px] text-text-muted font-medium">
-                  <th className="py-2.5 px-4">Name</th>
-                  <th className="py-2.5 px-4 w-32">Size</th>
-                  <th className="py-2.5 px-4 w-28">Type</th>
-                  <th className="py-2.5 px-4 w-36 text-right">Actions</th>
+                <tr className="border-b border-border/30 text-[11px] text-text-muted font-medium">
+                  <th className="pb-2.5 px-3 font-medium">Name</th>
+                  <th className="pb-2.5 px-3 w-32 font-medium">Size</th>
+                  <th className="pb-2.5 px-3 w-28 font-medium">Kind</th>
+                  <th className="pb-2.5 px-3 w-36 text-right font-medium">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/60">
+              <tbody className="divide-y divide-border/10">
                 {files.map((file) => {
                   const isSelected = selectedFilePaths.has(file.path);
                   return (
@@ -389,23 +426,23 @@ export const FolderView: React.FC = () => {
                         e.stopPropagation();
                         handleItemDoubleClick(file);
                       }}
-                      className={`group cursor-pointer transition ${
+                      className={`group cursor-pointer transition rounded-lg ${
                         isSelected
-                          ? 'bg-accent-blue/15 text-text-primary'
-                          : 'hover:bg-surface-subtle/60'
+                          ? 'bg-accent-blue/20 text-text-primary font-medium'
+                          : 'hover:bg-surface-subtle/40'
                       }`}
                     >
-                      <td className="py-2.5 px-4 flex items-center space-x-2.5">
-                        <div className="w-6 h-6 shrink-0 flex items-center justify-center">
-                          <DesktopFileIcon file={file} />
-                        </div>
+                      <td className="py-2 px-3 flex items-center space-x-2.5">
+                        <DesktopFileIcon file={file} size="sm" />
                         <span className="font-medium text-text-primary truncate max-w-md">{file.name}</span>
                       </td>
-                      <td className="py-2.5 px-4 text-text-muted font-mono">
+                      <td className="py-2 px-3 text-text-muted font-mono text-[11px]">
                         {file.type === 'dir' ? '—' : formatFileSize(file.size)}
                       </td>
-                      <td className="py-2.5 px-4 text-text-muted capitalize">{file.type}</td>
-                      <td className="py-2.5 px-4 text-right">
+                      <td className="py-2 px-3 text-text-muted capitalize text-[11px]">
+                        {file.type === 'dir' ? 'Folder' : file.name.split('.').pop()?.toUpperCase() || 'File'}
+                      </td>
+                      <td className="py-2 px-3 text-right">
                         <div className="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition">
                           {file.type === 'file' && (
                             <button
