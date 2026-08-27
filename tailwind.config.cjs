@@ -8,26 +8,26 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: '#1e1e1e', // Apple macOS deep canvas charcoal
-        surface: '#262626', // Apple macOS sidebar & topbar surface
-        'surface-subtle': '#333333', // Apple subtle card / pill background
-        'surface-active': '#383838', // Selected card (matching New Note in screenshot)
-        border: '#2e2e2e', // 1px hairline subtle Apple divider
+        background: '#1c1c1e', // Apple macOS system dark background
+        surface: '#242426', // Apple macOS sidebar & topbar surface
+        'surface-subtle': '#2c2c2e', // Apple subtle card / pill background
+        'surface-active': '#3a3a3c', // Exact New Note card gray from reference
+        border: '#333336', // 1px subtle hairline Apple divider
         'text-primary': '#f5f5f7', // SF Pro crisp white
-        'text-secondary': '#a1a1a6', // SF Pro neutral gray
-        'text-muted': '#6e6e73', // SF Pro tertiary muted gray
+        'text-secondary': '#8e8e93', // SF Pro neutral gray
+        'text-muted': '#636366', // SF Pro tertiary muted gray
         brand: {
-          50: '#fff9ed',
-          100: '#fef1d6',
-          400: '#fbbd42',
-          500: '#f5a623', // Apple warm gold / amber
-          600: '#e09612',
-          700: '#c5800a',
+          50: '#f6f6f7',
+          100: '#e5e5ea',
+          400: '#8e8e93',
+          500: '#3a3a3c', // Apple Sleek Slate Gray
+          600: '#2c2c2e',
+          700: '#1c1c1e',
         },
         accent: {
           blue: '#007aff', // Apple macOS system blue
           purple: '#af52de',
-          amber: '#f5a623', // Apple gold
+          amber: '#f5a623', // Apple gold (stars)
           red: '#ff453a', // Apple system red
           green: '#30d158', // Apple system green
         }

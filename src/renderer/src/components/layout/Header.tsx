@@ -145,18 +145,18 @@ export const Header: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={currentRepo ? 'Search files...' : 'Search folders...'}
-            className="w-44 bg-[#1e1e1e] border border-border/80 rounded-lg pl-8 pr-2.5 py-1 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand-500/60 focus:ring-1 focus:ring-brand-500/40 transition"
+            className="w-44 bg-[#2c2c2e] border border-white/10 rounded-lg pl-8 pr-2.5 py-1 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/20 transition"
           />
         </div>
 
         {/* View Mode Capsule */}
-        <div className="flex items-center bg-[#1e1e1e] border border-border/80 rounded-lg p-0.5">
+        <div className="flex items-center bg-[#2c2c2e] border border-white/10 rounded-lg p-0.5">
           <button
             onClick={() => setViewMode('grid')}
             title="Grid view"
             className={`p-1 rounded-md text-xs transition ${
               viewMode === 'grid'
-                ? 'bg-[#383838] text-white shadow-sm'
+                ? 'bg-[#3a3a3c] text-white shadow-sm'
                 : 'text-text-muted hover:text-text-primary'
             }`}
           >
@@ -167,7 +167,7 @@ export const Header: React.FC = () => {
             title="List view"
             className={`p-1 rounded-md text-xs transition ${
               viewMode === 'list'
-                ? 'bg-[#383838] text-white shadow-sm'
+                ? 'bg-[#3a3a3c] text-white shadow-sm'
                 : 'text-text-muted hover:text-text-primary'
             }`}
           >
@@ -180,7 +180,7 @@ export const Header: React.FC = () => {
           onClick={handleRefresh}
           disabled={isFolderLoading || isFileLoading}
           title="Refresh"
-          className="p-1.5 bg-[#1e1e1e] border border-border/80 hover:bg-[#333333] text-text-secondary hover:text-text-primary rounded-lg text-xs transition disabled:opacity-50"
+          className="p-1.5 bg-[#2c2c2e] border border-white/10 hover:bg-[#3a3a3c] text-text-secondary hover:text-text-primary rounded-lg text-xs transition disabled:opacity-50"
         >
           <RotateCw className={`w-3.5 h-3.5 ${isFolderLoading || isFileLoading ? 'animate-spin' : ''}`} />
         </button>
@@ -190,20 +190,20 @@ export const Header: React.FC = () => {
           <button
             onClick={handleOpenGithub}
             title="Open Repository on GitHub"
-            className="p-1.5 bg-[#1e1e1e] border border-border/80 hover:bg-[#333333] text-text-secondary hover:text-text-primary rounded-lg text-xs transition"
+            className="p-1.5 bg-[#2c2c2e] border border-white/10 hover:bg-[#3a3a3c] text-text-secondary hover:text-text-primary rounded-lg text-xs transition"
           >
             <ExternalLink className="w-3.5 h-3.5" />
           </button>
         )}
 
-        {/* Upload File button in Apple Warm Amber / Gold */}
+        {/* Upload File button in Apple Sleek Gray */}
         {currentRepo && (
           <button
             onClick={handleUploadClick}
             disabled={!token || isUploading}
-            className="flex items-center space-x-1.5 px-3 py-1.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-black rounded-lg text-xs font-semibold shadow-sm transition"
+            className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#3a3a3c] hover:bg-[#48484a] border border-white/10 disabled:opacity-50 text-white rounded-lg text-xs font-medium shadow-sm transition"
           >
-            <Upload className="w-3.5 h-3.5 stroke-[2.5]" />
+            <Upload className="w-3.5 h-3.5" />
             <span>{isUploading ? 'Uploading...' : 'Upload File'}</span>
           </button>
         )}

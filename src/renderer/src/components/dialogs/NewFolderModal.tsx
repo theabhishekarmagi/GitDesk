@@ -123,7 +123,7 @@ export const NewFolderModal: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading || !folderName.trim()}
-              className="flex-1 py-2 px-3 rounded-lg text-xs font-semibold bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-black shadow-sm transition flex items-center justify-center space-x-1.5"
+              className="flex-1 py-2 px-3 rounded-lg text-xs font-medium bg-[#3a3a3c] hover:bg-[#48484a] border border-white/10 disabled:opacity-50 text-white shadow-sm transition flex items-center justify-center space-x-1.5"
             >
               <span>{isLoading ? 'Creating on GitHub...' : 'Create Folder'}</span>
             </button>

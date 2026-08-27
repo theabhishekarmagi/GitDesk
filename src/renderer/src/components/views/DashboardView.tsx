@@ -119,7 +119,7 @@ export const DashboardView: React.FC = () => {
           <h1 className="text-base font-bold text-text-primary flex items-center space-x-2">
             <span>{viewTitle}</span>
             {filterMode === 'gitdrive' && (
-              <span className="text-[10px] bg-brand-500/20 text-brand-400 border border-brand-500/30 px-2 py-0.5 rounded-full font-medium">
+              <span className="text-[10px] bg-white/10 text-white/80 border border-white/10 px-2 py-0.5 rounded-full font-medium">
                 Drive Only
               </span>
             )}
@@ -142,9 +142,9 @@ export const DashboardView: React.FC = () => {
 
         <button
           onClick={() => setNewFolderModalOpen(true)}
-          className="flex items-center space-x-1.5 px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-black text-xs font-semibold rounded-lg shadow-sm transition"
+          className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#3a3a3c] hover:bg-[#48484a] border border-white/10 text-white text-xs font-medium rounded-lg shadow-sm transition"
         >
-          <FolderPlus className="w-3.5 h-3.5 stroke-[2.5]" />
+          <FolderPlus className="w-3.5 h-3.5" />
           <span>Create Folder</span>
         </button>
       </div>
@@ -169,9 +169,9 @@ export const DashboardView: React.FC = () => {
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setNewFolderModalOpen(true)}
-              className="flex items-center space-x-1.5 px-3.5 py-1.5 bg-brand-500 hover:bg-brand-600 text-black text-xs font-semibold rounded-lg shadow-sm"
+              className="flex items-center space-x-1.5 px-3.5 py-1.5 bg-[#3a3a3c] hover:bg-[#48484a] border border-white/10 text-white text-xs font-medium rounded-lg shadow-sm"
             >
-              <FolderPlus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <FolderPlus className="w-3.5 h-3.5" />
               <span>Create GitDrive Folder</span>
             </button>
             {filterMode === 'gitdrive' && (
@@ -255,7 +255,7 @@ export const DashboardView: React.FC = () => {
                         markAsGitDrive(owner, repo.name);
                       }}
                       title="Mark as GitDrive folder"
-                      className="text-[9px] text-brand-400 bg-brand-500/10 border border-brand-500/30 px-1.5 py-0.5 rounded"
+                      className="text-[9px] text-white/80 bg-white/10 hover:bg-white/15 border border-white/10 px-1.5 py-0.5 rounded transition"
                     >
                       + Drive
                     </button>

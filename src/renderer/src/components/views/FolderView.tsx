@@ -229,9 +229,9 @@ export const FolderView: React.FC = () => {
     >
       {/* Uploading Banner */}
       {isUploading && (
-        <div className="bg-brand-500 text-black px-4 py-2 text-xs flex items-center justify-between font-semibold shadow-sm shrink-0">
+        <div className="bg-[#2c2c2e] border-b border-white/10 text-white px-4 py-2 text-xs flex items-center justify-between font-medium shadow-sm shrink-0">
           <div className="flex items-center space-x-2">
-            <Loader2 className="w-3.5 h-3.5 animate-spin stroke-[2.5]" />
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
             <span>{uploadStatusText || 'Committing file to GitDrive...'}</span>
           </div>
         </div>

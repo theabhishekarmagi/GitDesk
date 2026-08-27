@@ -34,8 +34,8 @@ export const Sidebar: React.FC = () => {
       <div>
         <div className="titlebar-drag-region h-11 flex items-center px-4 pt-1 border-b border-border/40">
           <div className="titlebar-no-drag flex items-center space-x-2.5 ml-14">
-            <div className="w-6 h-6 rounded-md bg-brand-500 flex items-center justify-center text-background font-bold shadow-sm shadow-brand-500/30">
-              <HardDrive className="w-3.5 h-3.5 text-background" />
+            <div className="w-6 h-6 rounded-md bg-[#3a3a3c] border border-white/10 flex items-center justify-center text-white font-bold shadow-sm">
+              <HardDrive className="w-3.5 h-3.5 text-white" />
             </div>
             <span className="font-semibold text-sm tracking-tight text-text-primary">GitDrive</span>
           </div>
@@ -46,9 +46,9 @@ export const Sidebar: React.FC = () => {
           <button
             onClick={() => setNewFolderModalOpen(true)}
             disabled={!token}
-            className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 disabled:pointer-events-none text-black rounded-lg text-xs font-semibold shadow-sm transition duration-150"
+            className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-[#3a3a3c] hover:bg-[#48484a] border border-white/10 disabled:opacity-50 disabled:pointer-events-none text-white rounded-lg text-xs font-medium shadow-sm transition duration-150"
           >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <Plus className="w-4 h-4 text-white" />
             <span>New Folder</span>
           </button>
 
@@ -65,7 +65,7 @@ export const Sidebar: React.FC = () => {
               }}
               className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition ${
                 currentRepo === null && filterMode === 'gitdrive'
-                  ? 'bg-[#383838] text-white shadow-sm'
+                  ? 'bg-[#3a3a3c] text-white shadow-sm border border-white/5'
                   : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
               }`}
             >
@@ -73,7 +73,7 @@ export const Sidebar: React.FC = () => {
                 <Folder className="w-4 h-4 text-[#54a3ff]" />
                 <span>GitDrive Folders</span>
               </div>
-              <span className="text-[11px] text-brand-400 bg-brand-500/15 px-1.5 py-0.5 rounded-full border border-brand-500/30 font-medium">
+              <span className="text-[11px] text-white/80 bg-white/10 px-2 py-0.5 rounded-full border border-white/5 font-medium">
                 {gitDriveRepos.length}
               </span>
             </button>
@@ -86,7 +86,7 @@ export const Sidebar: React.FC = () => {
               }}
               className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition ${
                 currentRepo === null && filterMode === 'all'
-                  ? 'bg-[#383838] text-white shadow-sm'
+                  ? 'bg-[#3a3a3c] text-white shadow-sm border border-white/5'
                   : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
               }`}
             >
@@ -94,7 +94,7 @@ export const Sidebar: React.FC = () => {
                 <Globe className="w-4 h-4 text-accent-blue" />
                 <span>All Repositories</span>
               </div>
-              <span className="text-[11px] text-text-muted bg-white/5 px-1.5 py-0.5 rounded-full border border-white/10">
+              <span className="text-[11px] text-text-muted bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
                 {repositories.length}
               </span>
             </button>
@@ -107,12 +107,12 @@ export const Sidebar: React.FC = () => {
               }}
               className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition ${
                 currentRepo === null && filterMode === 'starred'
-                  ? 'bg-[#383838] text-white shadow-sm'
+                  ? 'bg-[#3a3a3c] text-white shadow-sm border border-white/5'
                   : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
               }`}
             >
               <div className="flex items-center space-x-2">
-                <Star className="w-4 h-4 text-brand-500" />
+                <Star className="w-4 h-4 text-accent-amber" />
                 <span>Starred</span>
               </div>
               <span className="text-[11px] text-text-muted">
@@ -175,7 +175,7 @@ export const Sidebar: React.FC = () => {
         ) : (
           <button
             onClick={() => setAuthModalOpen(true)}
-            className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-brand-500 hover:bg-brand-600 text-black rounded-lg text-xs font-semibold shadow-sm transition"
+            className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-[#3a3a3c] hover:bg-[#48484a] border border-white/10 text-white rounded-lg text-xs font-medium shadow-sm transition"
           >
             <Github className="w-4 h-4" />
             <span>Connect GitHub</span>
