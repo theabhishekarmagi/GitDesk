@@ -1,0 +1,19 @@
+PackageIdentifier: theabhishekarmagi.GitDrive
+PackageVersion: 1.0.0
+PackageLocale: en-US
+Publisher: theabhishekarmagi
+PublisherUrl: https://github.com/theabhishekarmagi
+PublisherSupportUrl: https://github.com/theabhishekarmagi/GitDesk/issues
+PackageName: GitDrive
+PackageUrl: https://github.com/theabhishekarmagi/GitDesk
+License: MIT
+LicenseUrl: https://github.com/theabhishekarmagi/GitDesk/blob/main/LICENSE
+ShortDescription: Turn GitHub repositories into your personal high-speed cloud drive
+Description: GitDrive is a cross-platform desktop cloud storage drive backed by GitHub repositories with zero server costs, client-side encryption, and seamless file management.
+Tags:
+  - github
+  - cloud-storage
+  - drive
+  - file-manager
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

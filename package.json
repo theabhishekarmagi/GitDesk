@@ -14,7 +14,11 @@
     "build:renderer": "vite build",
     "preview": "vite preview",
     "start": "cross-env NODE_ENV=production electron .",
-    "postinstall": "bash scripts/setup-macos-app.sh"
+    "postinstall": "bash scripts/setup-macos-app.sh",
+    "dist": "npm run build && electron-builder",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:dir": "npm run build && electron-builder --dir"
   },
   "keywords": [
     "github",
@@ -43,11 +47,76 @@
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
     "electron": "^31.3.1",
+    "electron-builder": "^26.15.3",
     "esbuild": "^0.23.1",
     "postcss": "^8.4.41",
     "tailwindcss": "^3.4.10",
     "typescript": "^5.5.4",
     "vite": "^5.4.2",
     "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.gitdrive.app",
+    "productName": "GitDrive",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "assets/icon.png",
+      "assets/drag_icon.png"
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "GitDrive"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "theabhishekarmagi",
+      "repo": "GitDesk"
+    }
   }
 }
