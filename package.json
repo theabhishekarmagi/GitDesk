@@ -4,6 +4,10 @@
   "version": "1.0.0",
   "description": "Desktop application turning GitHub repositories into a personal cloud drive",
   "main": "dist/main/main.js",
+  "bin": {
+    "gitdrive-install": "./bin/install.js",
+    "gitdrive": "./bin/install.js"
+  },
   "scripts": {
     "dev": "concurrently -k -n \"VITE,MAIN,APP\" -c \"blue,yellow,green\" \"npm run dev:renderer\" \"npm run dev:main\" \"npm run dev:electron\"",
     "dev:renderer": "vite",
