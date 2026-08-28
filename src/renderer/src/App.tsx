@@ -11,16 +11,13 @@ import { RenameModal } from './components/dialogs/RenameModal';
 import { BatchActionBar } from './components/layout/BatchActionBar';
 import { useAuthStore } from './store/authStore';
 import { useFolderStore } from './store/folderStore';
-import { useSyncStore } from './store/syncStore';
 
 export const App: React.FC = () => {
   const { checkExistingAuth, isLoading: isAuthChecking } = useAuthStore();
   const { currentRepo } = useFolderStore();
-  const { initSync } = useSyncStore();
 
   useEffect(() => {
     checkExistingAuth();
-    initSync();
   }, []);
 
   return (
