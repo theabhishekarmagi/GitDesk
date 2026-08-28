@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, safeStorage, dialog, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, safeStorage, dialog, shell, nativeImage } from 'electron';
 import path from 'path';
 import fs from 'fs';
 
@@ -32,6 +32,10 @@ function getTokenStoragePath(): string {
 const appIconPath = fs.existsSync(path.join(__dirname, '../../assets/icon.png'))
   ? path.join(__dirname, '../../assets/icon.png')
   : path.join(process.cwd(), 'assets/icon.png');
+
+const dragIconPath = fs.existsSync(path.join(__dirname, '../../assets/drag_icon.png'))
+  ? path.join(__dirname, '../../assets/drag_icon.png')
+  : path.join(process.cwd(), 'assets/drag_icon.png');
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -267,9 +271,13 @@ function setupIpcHandlers() {
   ipcMain.on('drag:start', (event, filePath: string) => {
     if (!filePath || !fs.existsSync(filePath)) return;
     try {
+      const iconToUse = fs.existsSync(dragIconPath)
+        ? nativeImage.createFromPath(dragIconPath)
+        : nativeImage.createFromPath(appIconPath).resize({ width: 36, height: 36 });
+
       event.sender.startDrag({
         file: filePath,
-        icon: appIconPath,
+        icon: iconToUse,
       });
     } catch (err) {
       console.error('Failed to start native drag:', err);
