@@ -5,6 +5,7 @@ import { syncService } from './syncService';
 
 let mainWindow: BrowserWindow | null = null;
 const isDev = process.env.NODE_ENV === 'development';
+app.setName('GitDrive');
 
 function getTokenStoragePath(): string {
   const userDataPath = app.getPath('userData');

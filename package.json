@@ -1,5 +1,6 @@
 {
   "name": "gitdrive",
+  "productName": "GitDrive",
   "version": "1.0.0",
   "description": "Desktop application turning GitHub repositories into a personal cloud drive",
   "main": "dist/main/main.js",
@@ -13,7 +14,7 @@
     "build:renderer": "vite build",
     "preview": "vite preview",
     "start": "cross-env NODE_ENV=production electron .",
-    "postinstall": "cp assets/icon.icns node_modules/electron/dist/Electron.app/Contents/Resources/electron.icns 2>/dev/null || true && codesign --force --deep --sign - node_modules/electron/dist/Electron.app 2>/dev/null || true"
+    "postinstall": "bash scripts/setup-macos-app.sh"
   },
   "keywords": [
     "github",
