@@ -7,15 +7,26 @@ let mainWindow: BrowserWindow | null = null;
 const isDev = process.env.NODE_ENV === 'development';
 app.setName('GitDrive');
 
+function getAllPossibleTokenPaths(): string[] {
+  const home = app.getPath('home');
+  const appData = app.getPath('appData');
+  const userData = app.getPath('userData');
+
+  return [
+    path.join(userData, 'gitdrive.token'),
+    path.join(userData, 'gitvault.token'),
+    path.join(appData, 'gitdrive', 'gitdrive.token'),
+    path.join(appData, 'GitDrive', 'gitdrive.token'),
+    path.join(appData, 'Electron', 'gitdrive.token'),
+    path.join(appData, 'gitvault', 'gitvault.token'),
+    path.join(appData, 'GitVault', 'gitvault.token'),
+    path.join(home, '.gitdrive', 'token'),
+  ];
+}
+
 function getTokenStoragePath(): string {
   const userDataPath = app.getPath('userData');
   const drivePath = path.join(userDataPath, 'gitdrive.token');
-  const vaultPath = path.join(userDataPath, 'gitvault.token');
-  if (!fs.existsSync(drivePath) && fs.existsSync(vaultPath)) {
-    try {
-      fs.copyFileSync(vaultPath, drivePath);
-    } catch {}
-  }
   return drivePath;
 }
 
@@ -90,15 +101,30 @@ function setupIpcHandlers() {
   // 1. Secure Token Storage
   ipcMain.handle('secure-storage:save-token', async (_event, token: string) => {
     try {
-      const tokenPath = getTokenStoragePath();
+      const primaryPath = getTokenStoragePath();
+      const parentDir = path.dirname(primaryPath);
+      if (!fs.existsSync(parentDir)) {
+        fs.mkdirSync(parentDir, { recursive: true });
+      }
+
       if (safeStorage.isEncryptionAvailable()) {
         const encrypted = safeStorage.encryptString(token);
-        await fs.promises.writeFile(tokenPath, encrypted);
+        await fs.promises.writeFile(primaryPath, encrypted);
       } else {
-        // Fallback for systems without keychain
         const base64 = Buffer.from(token).toString('base64');
-        await fs.promises.writeFile(tokenPath, base64, 'utf-8');
+        await fs.promises.writeFile(primaryPath, base64, 'utf-8');
       }
+
+      // Also save backup to ~/.gitdrive/token so it survives any app data cache clears
+      try {
+        const fallbackDir = path.join(app.getPath('home'), '.gitdrive');
+        if (!fs.existsSync(fallbackDir)) {
+          fs.mkdirSync(fallbackDir, { recursive: true });
+        }
+        const b64 = Buffer.from(token).toString('base64');
+        await fs.promises.writeFile(path.join(fallbackDir, 'token'), b64, 'utf-8');
+      } catch {}
+
       syncService.setToken(token);
       syncService.startWatching();
       return true;
@@ -109,34 +135,63 @@ function setupIpcHandlers() {
   });
 
   ipcMain.handle('secure-storage:get-token', async () => {
-    try {
-      const tokenPath = getTokenStoragePath();
-      if (!fs.existsSync(tokenPath)) {
-        return null;
+    const candidatePaths = getAllPossibleTokenPaths();
+    for (const tokenPath of candidatePaths) {
+      if (fs.existsSync(tokenPath)) {
+        try {
+          const raw = await fs.promises.readFile(tokenPath);
+          let token: string | null = null;
+          if (safeStorage.isEncryptionAvailable()) {
+            try {
+              token = safeStorage.decryptString(raw);
+            } catch (decErr) {
+              // safeStorage decrypt may fail if Keychain app identity shifted
+            }
+          }
+          if (!token) {
+            const text = raw.toString('utf-8');
+            if (text.startsWith('ghp_') || text.startsWith('github_pat_')) {
+              token = text.trim();
+            } else {
+              try {
+                const b64 = Buffer.from(text, 'base64').toString('utf-8').trim();
+                if (b64.startsWith('ghp_') || b64.startsWith('github_pat_')) {
+                  token = b64;
+                }
+              } catch {}
+            }
+          }
+          if (token && (token.startsWith('ghp_') || token.startsWith('github_pat_'))) {
+            // Keep primary location up to date
+            const primaryPath = getTokenStoragePath();
+            if (tokenPath !== primaryPath) {
+              try {
+                if (safeStorage.isEncryptionAvailable()) {
+                  await fs.promises.writeFile(primaryPath, safeStorage.encryptString(token));
+                }
+              } catch {}
+            }
+            syncService.setToken(token);
+            syncService.startWatching();
+            return token;
+          }
+        } catch (err) {
+          console.error('Failed to read candidate token path:', tokenPath, err);
+        }
       }
-      const raw = await fs.promises.readFile(tokenPath);
-      let token: string | null = null;
-      if (safeStorage.isEncryptionAvailable()) {
-        token = safeStorage.decryptString(raw);
-      } else {
-        token = Buffer.from(raw.toString('utf-8'), 'base64').toString('utf-8');
-      }
-      if (token) {
-        syncService.setToken(token);
-        syncService.startWatching();
-      }
-      return token;
-    } catch (err) {
-      console.error('Failed to retrieve token:', err);
-      return null;
     }
+    return null;
   });
 
   ipcMain.handle('secure-storage:delete-token', async () => {
     try {
-      const tokenPath = getTokenStoragePath();
-      if (fs.existsSync(tokenPath)) {
-        await fs.promises.unlink(tokenPath);
+      const candidatePaths = getAllPossibleTokenPaths();
+      for (const p of candidatePaths) {
+        if (fs.existsSync(p)) {
+          try {
+            await fs.promises.unlink(p);
+          } catch {}
+        }
       }
       syncService.setToken(null);
       syncService.stopWatching();
