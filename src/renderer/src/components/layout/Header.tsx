@@ -7,10 +7,14 @@ import {
   Upload,
   RotateCw,
   ExternalLink,
+  FolderOpen,
+  CheckCircle2,
+  Cloud,
 } from 'lucide-react';
 import { useFolderStore } from '../../store/folderStore';
 import { useFileStore } from '../../store/fileStore';
 import { useAuthStore } from '../../store/authStore';
+import { useSyncStore } from '../../store/syncStore';
 
 export const Header: React.FC = () => {
   const { currentRepo, selectRepository, fetchRepositories, isLoading: isFolderLoading } = useFolderStore();
@@ -28,6 +32,7 @@ export const Header: React.FC = () => {
     files,
   } = useFileStore();
   const { token } = useAuthStore();
+  const { status: syncStatus, lastSynced, revealInFinder, syncNow } = useSyncStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleRefresh = () => {
@@ -174,6 +179,36 @@ export const Header: React.FC = () => {
             <List className="w-3.5 h-3.5" />
           </button>
         </div>
+
+        {/* Live Sync Status Indicator */}
+        {syncStatus === 'syncing' ? (
+          <div
+            title="Syncing with Finder..."
+            className="flex items-center space-x-1.5 px-2.5 py-1 bg-[#2c2c2e] border border-white/10 rounded-lg text-xs text-[#54a3ff]"
+          >
+            <RotateCw className="w-3 h-3 animate-spin" />
+            <span className="text-[11px] font-medium hidden sm:inline">Syncing</span>
+          </div>
+        ) : (
+          <button
+            onClick={() => syncNow(currentRepo ? currentRepo.full_name : undefined)}
+            title={lastSynced ? `Synced with Finder (${lastSynced}) • Click to sync now` : 'Synced with Finder • Click to sync'}
+            className="flex items-center space-x-1.5 px-2.5 py-1 bg-[#2c2c2e] border border-white/10 hover:bg-[#3a3a3c] text-text-secondary hover:text-text-primary rounded-lg text-xs transition"
+          >
+            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+            <span className="text-[11px] font-medium hidden sm:inline">Synced</span>
+          </button>
+        )}
+
+        {/* Reveal in Finder / Explorer Button */}
+        <button
+          onClick={() => revealInFinder(currentRepo ? currentRepo.name : undefined, currentPath || undefined)}
+          title="Open in macOS Finder"
+          className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-[#2c2c2e] border border-white/10 hover:bg-[#3a3a3c] text-text-secondary hover:text-text-primary rounded-lg text-xs font-medium transition"
+        >
+          <FolderOpen className="w-3.5 h-3.5" />
+          <span className="hidden md:inline">Finder</span>
+        </button>
 
         {/* Refresh Capsule */}
         <button

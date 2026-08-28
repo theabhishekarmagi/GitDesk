@@ -16,6 +16,21 @@ const api: IElectronAPI = {
   system: {
     openExternal: (url: string) => ipcRenderer.invoke('system:open-external', url),
   },
+  sync: {
+    getDrivePath: () => ipcRenderer.invoke('sync:get-drive-path'),
+    revealInFinder: (repoName?: string, subPath?: string) =>
+      ipcRenderer.invoke('sync:reveal-in-finder', repoName, subPath),
+    pinToFinder: () => ipcRenderer.invoke('sync:pin-to-finder'),
+    syncNow: (repoFullName?: string) => ipcRenderer.invoke('sync:sync-now', repoFullName),
+    getStatus: () => ipcRenderer.invoke('sync:get-status'),
+    onStatusChange: (callback: (status: any) => void) => {
+      const handler = (_event: any, status: any) => callback(status);
+      ipcRenderer.on('sync:status-changed', handler);
+      return () => {
+        ipcRenderer.removeListener('sync:status-changed', handler);
+      };
+    },
+  },
 };
 
 contextBridge.exposeInMainWorld('gitdrive', api);

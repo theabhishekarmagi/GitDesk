@@ -7,9 +7,11 @@ import {
   LogOut,
   Plus,
   Github,
+  FolderOpen,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useFolderStore } from '../../store/folderStore';
+import { useSyncStore } from '../../store/syncStore';
 
 export const Sidebar: React.FC = () => {
   const { user, token, logout, setAuthModalOpen } = useAuthStore();
@@ -21,6 +23,7 @@ export const Sidebar: React.FC = () => {
     filterMode,
     setFilterMode,
   } = useFolderStore();
+  const { revealInFinder } = useSyncStore();
 
   const gitDriveRepos = repositories.filter((r) => r.isGitDrive);
   const starredRepos = repositories.filter((r) => (r.stargazers_count || 0) > 0);
@@ -119,6 +122,23 @@ export const Sidebar: React.FC = () => {
                 {starredRepos.length}
               </span>
             </button>
+
+            {/* Native Finder / Explorer Drive */}
+            <div className="pt-2">
+              <button
+                onClick={() => revealInFinder()}
+                className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-white/5 transition"
+                title="Open ~/GitDrive in native macOS Finder"
+              >
+                <div className="flex items-center space-x-2">
+                  <FolderOpen className="w-4 h-4 text-emerald-400" />
+                  <span>Open in Finder</span>
+                </div>
+                <span className="text-[10px] text-text-muted bg-white/5 px-1.5 py-0.5 rounded border border-white/5 font-mono">
+                  ~/GitDrive
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

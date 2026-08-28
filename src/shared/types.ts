@@ -47,6 +47,25 @@ export interface FileUploadPayload {
   base64: string;
 }
 
+export type SyncStatusType = 'idle' | 'syncing' | 'error' | 'offline';
+
+export interface ISyncStatusEvent {
+  status: SyncStatusType;
+  message?: string;
+  lastSynced?: string;
+  pendingCount?: number;
+  drivePath?: string;
+}
+
+export interface ISyncAPI {
+  getDrivePath: () => Promise<string>;
+  revealInFinder: (repoName?: string, subPath?: string) => Promise<boolean>;
+  pinToFinder: () => Promise<boolean>;
+  syncNow: (repoFullName?: string) => Promise<boolean>;
+  getStatus: () => Promise<ISyncStatusEvent>;
+  onStatusChange: (callback: (status: ISyncStatusEvent) => void) => () => void;
+}
+
 export interface IElectronAPI {
   secureStorage: {
     saveToken: (token: string) => Promise<boolean>;
@@ -67,6 +86,7 @@ export interface IElectronAPI {
   system: {
     openExternal: (url: string) => Promise<void>;
   };
+  sync: ISyncAPI;
 }
 
 declare global {

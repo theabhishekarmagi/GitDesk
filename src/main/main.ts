@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, safeStorage, dialog, shell } from 'electron';
 import path from 'path';
 import fs from 'fs';
+import { syncService } from './syncService';
 
 let mainWindow: BrowserWindow | null = null;
 const isDev = process.env.NODE_ENV === 'development';
@@ -44,6 +45,8 @@ function createWindow(): void {
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
 
+  syncService.setMainWindow(mainWindow);
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -62,6 +65,7 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
+  syncService.stopWatching();
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -81,6 +85,8 @@ function setupIpcHandlers() {
         const base64 = Buffer.from(token).toString('base64');
         await fs.promises.writeFile(tokenPath, base64, 'utf-8');
       }
+      syncService.setToken(token);
+      syncService.startWatching();
       return true;
     } catch (err) {
       console.error('Failed to save secure token:', err);
@@ -95,11 +101,17 @@ function setupIpcHandlers() {
         return null;
       }
       const raw = await fs.promises.readFile(tokenPath);
+      let token: string | null = null;
       if (safeStorage.isEncryptionAvailable()) {
-        return safeStorage.decryptString(raw);
+        token = safeStorage.decryptString(raw);
       } else {
-        return Buffer.from(raw.toString('utf-8'), 'base64').toString('utf-8');
+        token = Buffer.from(raw.toString('utf-8'), 'base64').toString('utf-8');
       }
+      if (token) {
+        syncService.setToken(token);
+        syncService.startWatching();
+      }
+      return token;
     } catch (err) {
       console.error('Failed to retrieve token:', err);
       return null;
@@ -112,6 +124,8 @@ function setupIpcHandlers() {
       if (fs.existsSync(tokenPath)) {
         await fs.promises.unlink(tokenPath);
       }
+      syncService.setToken(null);
+      syncService.stopWatching();
       return true;
     } catch (err) {
       console.error('Failed to delete token:', err);
@@ -172,5 +186,30 @@ function setupIpcHandlers() {
   // 3. System External Opener
   ipcMain.handle('system:open-external', async (_event, url: string) => {
     await shell.openExternal(url);
+  });
+
+  // 4. Native Finder / File Explorer Sync Integration
+  ipcMain.handle('sync:get-drive-path', async () => {
+    return syncService.getDrivePath();
+  });
+
+  ipcMain.handle('sync:reveal-in-finder', async (_event, repoName?: string, subPath?: string) => {
+    return syncService.revealInFinder(repoName, subPath);
+  });
+
+  ipcMain.handle('sync:pin-to-finder', async () => {
+    return syncService.pinToFinder();
+  });
+
+  ipcMain.handle('sync:sync-now', async (_event, repoFullName?: string) => {
+    if (repoFullName) {
+      const [owner, repo] = repoFullName.split('/');
+      return syncService.pullRepoFromGitHub(owner, repo);
+    }
+    return false;
+  });
+
+  ipcMain.handle('sync:get-status', async () => {
+    return syncService.getStatus();
   });
 }
