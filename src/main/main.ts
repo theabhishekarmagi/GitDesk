@@ -246,4 +246,33 @@ function setupIpcHandlers() {
   ipcMain.handle('system:open-external', async (_event, url: string) => {
     await shell.openExternal(url);
   });
+
+  // 4. Native Drag-Out Support (Drag any file from GitDrive straight to Desktop / Finder / Explorer)
+  ipcMain.handle('drag:prepare-file', async (_event, fileName: string, base64Content: string) => {
+    try {
+      const cacheDir = path.join(app.getPath('temp'), 'gitdrive-drag-cache');
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+      const targetPath = path.join(cacheDir, fileName);
+      const buffer = Buffer.from(base64Content, 'base64');
+      await fs.promises.writeFile(targetPath, buffer);
+      return targetPath;
+    } catch (err) {
+      console.error('Failed to prepare file for drag:', err);
+      return null;
+    }
+  });
+
+  ipcMain.on('drag:start', (event, filePath: string) => {
+    if (!filePath || !fs.existsSync(filePath)) return;
+    try {
+      event.sender.startDrag({
+        file: filePath,
+        icon: appIconPath,
+      });
+    } catch (err) {
+      console.error('Failed to start native drag:', err);
+    }
+  });
 }

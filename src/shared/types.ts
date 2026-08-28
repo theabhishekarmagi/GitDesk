@@ -67,6 +67,10 @@ export interface IElectronAPI {
   system: {
     openExternal: (url: string) => Promise<void>;
   };
+  drag: {
+    prepareFile: (fileName: string, base64Content: string) => Promise<string | null>;
+    startDrag: (filePath: string) => void;
+  };
 }
 
 declare global {

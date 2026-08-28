@@ -65,8 +65,9 @@ const DesktopFileIcon: React.FC<{ file: FileItem; size?: 'sm' | 'lg' }> = ({ fil
         <img
           src={file.download_url}
           alt={file.name}
-          className="w-full h-full object-cover rounded"
+          className="w-full h-full object-cover rounded pointer-events-none select-none"
           loading="lazy"
+          draggable={false}
         />
       </div>
     );
@@ -213,6 +214,41 @@ export const FolderView: React.FC = () => {
     }
   };
 
+  // Native drag-out to desktop / Finder / File Explorer
+  const handleFileMouseDown = async (file: FileItem) => {
+    if (file.type === 'dir' || !currentRepo) return;
+    const [owner, repoName] = currentRepo.full_name.split('/');
+    try {
+      const dragApi = window.gitdrive?.drag || window.gitvault?.drag;
+      if (!dragApi) return;
+      const fileData = await GitHubService.getFileContent(owner, repoName, file.path);
+      if (fileData?.content) {
+        await dragApi.prepareFile(file.name, fileData.content);
+      }
+    } catch {}
+  };
+
+  const handleFileDragStart = async (e: React.DragEvent, file: FileItem) => {
+    if (file.type === 'dir' || !currentRepo) return;
+    e.preventDefault();
+
+    const dragApi = window.gitdrive?.drag || window.gitvault?.drag;
+    if (!dragApi) return;
+
+    const [owner, repoName] = currentRepo.full_name.split('/');
+    try {
+      const fileData = await GitHubService.getFileContent(owner, repoName, file.path);
+      if (fileData?.content) {
+        const localPath = await dragApi.prepareFile(file.name, fileData.content);
+        if (localPath) {
+          dragApi.startDrag(localPath);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to initiate native drag for file:', err);
+    }
+  };
+
   return (
     <div
       onDragOver={handleDragOver}
@@ -290,6 +326,9 @@ export const FolderView: React.FC = () => {
               return (
                 <div
                   key={file.path}
+                  draggable={file.type === 'file'}
+                  onMouseDown={() => handleFileMouseDown(file)}
+                  onDragStart={(e) => handleFileDragStart(e, file)}
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleSelectFile(file.path, e.metaKey || e.ctrlKey);
@@ -418,6 +457,9 @@ export const FolderView: React.FC = () => {
                   return (
                     <tr
                       key={file.path}
+                      draggable={file.type === 'file'}
+                      onMouseDown={() => handleFileMouseDown(file)}
+                      onDragStart={(e) => handleFileDragStart(e, file)}
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleSelectFile(file.path, e.metaKey || e.ctrlKey);

@@ -16,6 +16,12 @@ const api: IElectronAPI = {
   system: {
     openExternal: (url: string) => ipcRenderer.invoke('system:open-external', url),
   },
+  drag: {
+    prepareFile: (fileName: string, base64Content: string) =>
+      ipcRenderer.invoke('drag:prepare-file', fileName, base64Content),
+    startDrag: (filePath: string) =>
+      ipcRenderer.send('drag:start', filePath),
+  },
 };
 
 contextBridge.exposeInMainWorld('gitdrive', api);
