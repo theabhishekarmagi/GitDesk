@@ -1,5 +1,5 @@
 {
-  "name": "gitdrive",
+  "name": "gitdrive-install",
   "productName": "GitDrive",
   "version": "1.0.0",
   "description": "Desktop application turning GitHub repositories into a personal cloud drive",
@@ -8,6 +8,10 @@
     "gitdrive-install": "./bin/install.js",
     "gitdrive": "./bin/install.js"
   },
+  "files": [
+    "bin/",
+    "README.md"
+  ],
   "scripts": {
     "dev": "concurrently -k -n \"VITE,MAIN,APP\" -c \"blue,yellow,green\" \"npm run dev:renderer\" \"npm run dev:main\" \"npm run dev:electron\"",
     "dev:renderer": "vite",
