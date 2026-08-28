@@ -4,13 +4,13 @@
 </h1>
 
 <p align="center">
-  🚀 Turn your GitHub repositories into a sleek, zero-cost, privacy-first personal cloud drive.
+  Turn your GitHub repositories into a sleek, zero-cost, privacy-first personal cloud drive.
 </p>
 
 <p align="center">
-  <a href="#-get-started"><img src="https://img.shields.io/badge/💻_Install_Now-npx_gitdrive--install-3776AB?style=for-the-badge&logo=npm" alt="Install with npx"></a>
+  <a href="#get-started"><img src="https://img.shields.io/badge/Install_Now-npx_gitdrive--install-3776AB?style=for-the-badge" alt="Install with npx"></a>
   &nbsp;
-  <a href="https://github.com/theabhishekarmagi/GitDesk/releases/latest"><img src="https://img.shields.io/badge/📦_Download_Desktop-macOS_|_Windows-10B981?style=for-the-badge&logo=apple" alt="Download Desktop"></a>
+  <a href="https://github.com/theabhishekarmagi/GitDesk/releases/latest"><img src="https://img.shields.io/badge/Download_Desktop-macOS_|_Windows-10B981?style=for-the-badge" alt="Download Desktop"></a>
 </p>
 
 <p align="center">
@@ -28,29 +28,24 @@
 Managing personal files across the cloud has two major pain points:
 
 1. **Commercial cloud storage is expensive and vendor-locked.** Monthly subscriptions for Google Drive, Dropbox, and OneDrive add up every year, while your personal files and documents are stored on third-party servers.
-2. **Git & GitHub offer free, infinite versioned storage, but git CLI is too tedious for daily file management.** Opening a terminal to `git add`, `git commit`, and `git push` every time you want to save a PDF, presentation, screenshot, or design asset is high-friction.
+2. **Git and GitHub offer free, infinite versioned storage, but git CLI is too tedious for daily file management.** Opening a terminal to run git commands every time you want to save a PDF, presentation, screenshot, or design asset is high-friction.
 
-**GitDrive bridges this gap.** It gives you the familiar, beautiful desktop experience of a modern cloud drive, backed 100% by your own GitHub account:
+GitDrive bridges this gap. It gives you the familiar, beautiful desktop experience of a modern cloud drive, backed 100% by your own GitHub account:
 
 - **Zero subscription fees**: Unlimited repositories and storage backed directly by GitHub.
-- **True data ownership**: Your files live in your own repositories. No middleman servers, no data scraping.
-- **Native OS Drag & Drop**: Drag documents, PDFs, and media directly from GitDrive out onto your Desktop, Finder, or Windows File Explorer.
+- **True data ownership**: Your files live in your own repositories with no middleman servers.
+- **Native OS Drag and Drop**: Drag documents, PDFs, and media directly from GitDrive out onto your Desktop, Finder, or Windows File Explorer.
 - **Built-in Time Machine**: Effortlessly inspect and restore past versions of any file backed by Git commit history.
 
 ---
 
-## ✨ Features
+## Overview
 
-- 📁 **Repository as Folder**: Treat any GitHub repository as a high-capacity drive folder.
-- 🖐️ **Native OS Drag-and-Drop**: Drag any file or document directly out of GitDrive onto your Desktop, macOS Finder, or Windows File Explorer with a single gesture.
-- 🔒 **Hardware-Encrypted Security**: Personal Access Tokens are encrypted client-side using native OS keychains (macOS Keychain / Windows Credential Manager). Credentials never touch any external server.
-- ⏱️ **Version History & Restore**: Browse complete commit histories for individual files and restore earlier versions with one click.
-- 🎨 **Apple Notes Dark Aesthetic**: Minimalist, clean neutral dark gray theme (`#1c1c1e`) engineered for distraction-free focus.
-- ⚡ **Zero-Daemon Overhead**: Direct REST communication with GitHub. No background disk watchers or CPU-draining syncing daemons.
+**GitDrive** is an open-source cross-platform desktop application that transforms your GitHub repositories into personal cloud storage. It pairs the familiar graphical experience of a native desktop drive with the durability, zero infrastructure cost, and version control of GitHub. With native drag-and-drop file transfers, client-side encryption, and seamless file management, GitDrive offers a private, subscription-free alternative to traditional commercial cloud providers.
 
 ---
 
-## 🚀 Get Started
+## Get Started
 
 Install and launch GitDrive using any of the options below:
 
@@ -61,18 +56,18 @@ If you have Node.js installed, run this single command in your terminal:
 ```bash
 npx gitdrive-install
 ```
-> Automatically detects your OS (macOS Apple Silicon/Intel or Windows), downloads the latest desktop build, installs it into your applications folder, and launches the app!
+> Automatically detects your OS (macOS Apple Silicon/Intel or Windows), downloads the latest desktop build, installs it into your applications folder, and launches the app.
 
 ---
 
 ### Option 2: 1-Line Terminal Scripts (No Node.js Required)
 
-#### 🍏 macOS (Terminal):
+#### macOS (Terminal):
 ```bash
 curl -fsSL https://raw.githubusercontent.com/theabhishekarmagi/GitDesk/main/install.sh | bash
 ```
 
-#### 🪟 Windows (PowerShell):
+#### Windows (PowerShell):
 ```powershell
 irm https://raw.githubusercontent.com/theabhishekarmagi/GitDesk/main/install.ps1 | iex
 ```
@@ -132,17 +127,17 @@ npm run dist:win
 
 ---
 
-## 🔐 Security & Privacy
+## Security & Privacy
 
-* **Direct API Communication**: GitDrive communicates directly with the official GitHub REST API (`api.github.com`). No intermediate proxy or relay server is used.
-* **Hardware Keychain Storage**: Your GitHub Personal Access Token is stored using Electron's `safeStorage` API, which leverages Apple Keychain on macOS and Windows DPAPI on Windows.
-* **Dual-Layer Auto-Login**: Sessions are persistent across updates and app restarts. Tokens are destroyed only when you explicitly click **Log out**.
+- **Direct API Communication**: GitDrive communicates directly with the official GitHub REST API (`api.github.com`). No intermediate proxy or relay server is used.
+- **Hardware Keychain Storage**: Your GitHub Personal Access Token is stored using Electron's `safeStorage` API, which leverages Apple Keychain on macOS and Windows DPAPI on Windows.
+- **Dual-Layer Auto-Login**: Sessions are persistent across updates and app restarts. Tokens are destroyed only when you explicitly click **Log out**.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-Contributions, issues, and feature requests are welcome!
+Contributions, issues, and feature requests are welcome.
 Feel free to check the [issues page](https://github.com/theabhishekarmagi/GitDesk/issues).
 
 1. Fork the Project
@@ -153,6 +148,6 @@ Feel free to check the [issues page](https://github.com/theabhishekarmagi/GitDes
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
