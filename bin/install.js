@@ -151,6 +151,8 @@ async function main() {
       execSync('rm -rf /Applications/GitDrive.app');
       execSync(`unzip -q -o "${tmpZip}" -d /Applications/`);
       execSync('xattr -cr /Applications/GitDrive.app 2>/dev/null || true');
+      execSync('xattr -dr com.apple.quarantine /Applications/GitDrive.app 2>/dev/null || true');
+      execSync('codesign --force --deep --sign - /Applications/GitDrive.app 2>/dev/null || true');
       if (fs.existsSync(tmpZip)) fs.unlinkSync(tmpZip);
     } catch (e) {
       console.error(`${colors.red}Failed to extract into /Applications. Try running with sudo if permissions are restricted.${colors.reset}`);

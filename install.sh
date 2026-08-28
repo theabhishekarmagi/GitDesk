@@ -65,6 +65,8 @@ unzip -q -o "$ZIP_PATH" -d /Applications/
 
 echo "🛡️  Configuring macOS security permissions..."
 xattr -cr /Applications/GitDrive.app 2>/dev/null || true
+xattr -dr com.apple.quarantine /Applications/GitDrive.app 2>/dev/null || true
+codesign --force --deep --sign - /Applications/GitDrive.app 2>/dev/null || true
 
 echo "🧹 Cleaning up temporary cache..."
 rm -rf "$TEMP_DIR"

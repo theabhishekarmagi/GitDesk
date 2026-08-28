@@ -1,7 +1,7 @@
 {
   "name": "gitdrive-install",
   "productName": "GitDrive",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Desktop application turning GitHub repositories into a personal cloud drive",
   "main": "dist/main/main.js",
   "bin": {
@@ -92,7 +92,7 @@
       ],
       "icon": "assets/icon.icns",
       "category": "public.app-category.productivity",
-      "hardenedRuntime": true,
+      "hardenedRuntime": false,
       "gatekeeperAssess": false
     },
     "win": {
