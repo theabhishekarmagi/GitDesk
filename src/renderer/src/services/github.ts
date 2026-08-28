@@ -202,8 +202,23 @@ export const GitHubService = {
     });
 
     const data = response.data as any;
+    let content = data.content;
+    if (!content && data.download_url) {
+      try {
+        const res = await fetch(data.download_url);
+        const arrayBuf = await res.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuf);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        content = btoa(binary);
+      } catch (fetchErr) {
+        console.warn('Failed to fetch download_url for large file:', fetchErr);
+      }
+    }
     return {
-      content: data.content,
+      content: content || '',
       sha: data.sha,
       size: data.size,
     };

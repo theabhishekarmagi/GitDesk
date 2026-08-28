@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useFolderStore } from '../../store/folderStore';
 import { useFileStore } from '../../store/fileStore';
+import { GitHubService } from '../../services/github';
 import { FileItem } from '@shared/types';
 
 // Native macOS / Windows Desktop File Icon component
