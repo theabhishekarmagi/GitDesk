@@ -18,6 +18,10 @@ function getTokenStoragePath(): string {
   return drivePath;
 }
 
+const appIconPath = fs.existsSync(path.join(__dirname, '../../assets/icon.png'))
+  ? path.join(__dirname, '../../assets/icon.png')
+  : path.join(process.cwd(), 'assets/icon.png');
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1180,
@@ -25,6 +29,7 @@ function createWindow(): void {
     minWidth: 860,
     minHeight: 560,
     title: 'GitDrive',
+    icon: appIconPath,
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     trafficLightPosition: { x: 16, y: 16 },
     backgroundColor: '#1c1c1e',
@@ -54,6 +59,14 @@ function createWindow(): void {
 
 // App lifecycle
 app.whenReady().then(() => {
+  if (process.platform === 'darwin' && app.dock) {
+    try {
+      app.dock.setIcon(appIconPath);
+    } catch (err) {
+      console.warn('Failed to set dock icon:', err);
+    }
+  }
+
   setupIpcHandlers();
   createWindow();
 

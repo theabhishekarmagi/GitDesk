@@ -13,7 +13,7 @@
     "build:renderer": "vite build",
     "preview": "vite preview",
     "start": "cross-env NODE_ENV=production electron .",
-    "postinstall": "codesign --force --deep --sign - node_modules/electron/dist/Electron.app 2>/dev/null || true"
+    "postinstall": "cp assets/icon.icns node_modules/electron/dist/Electron.app/Contents/Resources/electron.icns 2>/dev/null || true && codesign --force --deep --sign - node_modules/electron/dist/Electron.app 2>/dev/null || true"
   },
   "keywords": [
     "github",

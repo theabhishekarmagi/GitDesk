@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3c3c40"/>
+      <stop offset="100%" stop-color="#212124"/>
+    </linearGradient>
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.22)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.06)"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="24" stdDeviation="32" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    <filter id="iconShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Background Squircle with macOS corner radius -->
+  <rect x="100" y="100" width="824" height="824" rx="185" ry="185"
+        fill="url(#bgGrad)"
+        stroke="url(#borderGrad)"
+        stroke-width="8"
+        filter="url(#shadow)"/>
+
+  <!-- Centered HardDrive Icon matching the exact logo -->
+  <g transform="translate(260, 260) scale(21)"
+     fill="none"
+     stroke="#ffffff"
+     stroke-width="1.75"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     filter="url(#iconShadow)">
+    <line x1="22" y1="12" x2="2" y2="12"/>
+    <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+    <line x1="6" y1="16" x2="6.01" y2="16"/>
+    <line x1="10" y1="16" x2="10.01" y2="16"/>
+  </g>
+</svg>
