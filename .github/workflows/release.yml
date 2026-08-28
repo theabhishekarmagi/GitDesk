@@ -35,13 +35,13 @@ jobs:
 
       - name: Package with electron-builder (macOS)
         if: matrix.os == 'macos-latest'
-        run: npx electron-builder --mac
+        run: npx electron-builder --mac --publish never
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Package with electron-builder (Windows)
         if: matrix.os == 'windows-latest'
-        run: npx electron-builder --win
+        run: npx electron-builder --win --publish never
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
