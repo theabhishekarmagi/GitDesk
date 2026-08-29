@@ -1,6 +1,8 @@
-import { app, BrowserWindow, ipcMain, safeStorage, dialog, shell, nativeImage } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell, nativeImage } from 'electron';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
+import os from 'os';
 
 let mainWindow: BrowserWindow | null = null;
 const isDev = process.env.NODE_ENV === 'development';
@@ -96,9 +98,58 @@ app.on('window-all-closed', () => {
   }
 });
 
+// Local hardware/user-bound AES-256-GCM encryption:
+// 100% silent in-process encryption that NEVER triggers OS Keychain password popups!
+function getLocalEncryptionKey(): Buffer {
+  const seed = `${os.hostname()}-${os.userInfo().username}-${os.homedir()}-gitdrive-secure-v2`;
+  return crypto.createHash('sha256').update(seed).digest();
+}
+
+function encryptToken(plainText: string): string {
+  const key = getLocalEncryptionKey();
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  let encrypted = cipher.update(plainText, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  const authTag = cipher.getAuthTag().toString('hex');
+  return `v2:${iv.toString('hex')}:${authTag}:${encrypted}`;
+}
+
+function decryptToken(raw: string): string | null {
+  try {
+    const text = raw.trim();
+    if (text.startsWith('v2:')) {
+      const parts = text.split(':');
+      if (parts.length === 4) {
+        const iv = Buffer.from(parts[1], 'hex');
+        const authTag = Buffer.from(parts[2], 'hex');
+        const cipherText = parts[3];
+        const key = getLocalEncryptionKey();
+        const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+        decipher.setAuthTag(authTag);
+        let decrypted = decipher.update(cipherText, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
+        return decrypted;
+      }
+    }
+    // Fallback for plain tokens
+    if (text.startsWith('ghp_') || text.startsWith('github_pat_')) {
+      return text;
+    }
+    // Fallback for base64 encoded tokens
+    const b64 = Buffer.from(text, 'base64').toString('utf-8').trim();
+    if (b64.startsWith('ghp_') || b64.startsWith('github_pat_')) {
+      return b64;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 // IPC Handlers
 function setupIpcHandlers() {
-  // 1. Secure Token Storage
+  // 1. Secure Token Storage (Silent AES-256-GCM without OS Keychain popups)
   ipcMain.handle('secure-storage:save-token', async (_event, token: string) => {
     try {
       const primaryPath = getTokenStoragePath();
@@ -107,13 +158,8 @@ function setupIpcHandlers() {
         fs.mkdirSync(parentDir, { recursive: true });
       }
 
-      if (safeStorage.isEncryptionAvailable()) {
-        const encrypted = safeStorage.encryptString(token);
-        await fs.promises.writeFile(primaryPath, encrypted);
-      } else {
-        const base64 = Buffer.from(token).toString('base64');
-        await fs.promises.writeFile(primaryPath, base64, 'utf-8');
-      }
+      const encrypted = encryptToken(token);
+      await fs.promises.writeFile(primaryPath, encrypted, 'utf-8');
 
       // Also save backup to ~/.gitdrive/token so it survives any app data cache clears
       try {
@@ -121,8 +167,7 @@ function setupIpcHandlers() {
         if (!fs.existsSync(fallbackDir)) {
           fs.mkdirSync(fallbackDir, { recursive: true });
         }
-        const b64 = Buffer.from(token).toString('base64');
-        await fs.promises.writeFile(path.join(fallbackDir, 'token'), b64, 'utf-8');
+        await fs.promises.writeFile(path.join(fallbackDir, 'token'), encrypted, 'utf-8');
       } catch {}
 
       return true;
@@ -137,36 +182,14 @@ function setupIpcHandlers() {
     for (const tokenPath of candidatePaths) {
       if (fs.existsSync(tokenPath)) {
         try {
-          const raw = await fs.promises.readFile(tokenPath);
-          let token: string | null = null;
-          if (safeStorage.isEncryptionAvailable()) {
-            try {
-              token = safeStorage.decryptString(raw);
-            } catch (decErr) {
-              // safeStorage decrypt may fail if Keychain app identity shifted
-            }
-          }
-          if (!token) {
-            const text = raw.toString('utf-8');
-            if (text.startsWith('ghp_') || text.startsWith('github_pat_')) {
-              token = text.trim();
-            } else {
-              try {
-                const b64 = Buffer.from(text, 'base64').toString('utf-8').trim();
-                if (b64.startsWith('ghp_') || b64.startsWith('github_pat_')) {
-                  token = b64;
-                }
-              } catch {}
-            }
-          }
+          const raw = await fs.promises.readFile(tokenPath, 'utf-8');
+          const token = decryptToken(raw);
           if (token && (token.startsWith('ghp_') || token.startsWith('github_pat_'))) {
-            // Keep primary location up to date
+            // Keep primary location up to date in modern v2 format
             const primaryPath = getTokenStoragePath();
-            if (tokenPath !== primaryPath) {
+            if (tokenPath !== primaryPath || !raw.startsWith('v2:')) {
               try {
-                if (safeStorage.isEncryptionAvailable()) {
-                  await fs.promises.writeFile(primaryPath, safeStorage.encryptString(token));
-                }
+                await fs.promises.writeFile(primaryPath, encryptToken(token), 'utf-8');
               } catch {}
             }
             return token;

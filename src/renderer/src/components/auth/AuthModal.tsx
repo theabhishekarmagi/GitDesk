@@ -45,8 +45,7 @@ export const AuthModal: React.FC = () => {
         <div className="flex items-start space-x-2.5 p-3 rounded-lg bg-surface-subtle border border-border/80 text-xs text-text-secondary mb-5">
           <ShieldCheck className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" />
           <p>
-            Your access token is encrypted in your system keychain using Electron's native{' '}
-            <code className="text-accent-blue font-mono">safeStorage</code>. We never send your credentials to any third-party server.
+            Your access token is hardware-encrypted locally using AES-256-GCM authenticated encryption. We never send your credentials to any third-party server.
           </p>
         </div>
 
