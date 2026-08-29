@@ -5,8 +5,8 @@
   "description": "Desktop application turning GitHub repositories into a personal cloud drive",
   "main": "dist/main/main.js",
   "bin": {
-    "gitdrive-install": "./bin/install.js",
-    "gitdrive": "./bin/install.js"
+    "gitdrive-install": "bin/install.js",
+    "gitdrive": "bin/install.js"
   },
   "files": [
     "bin/",
