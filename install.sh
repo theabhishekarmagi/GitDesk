@@ -39,29 +39,33 @@ fi
 
 REPO="theabhishekarmagi/GitDesk"
 TEMP_DIR="$(mktemp -d)"
-ZIP_PATH="$TEMP_DIR/GitDrive.zip"
+DMG_PATH="$TEMP_DIR/GitDrive.dmg"
+MOUNT_POINT="$TEMP_DIR/mount"
+mkdir -p "$MOUNT_POINT"
 
 echo "🔍 Locating latest release from GitHub ($REPO)..."
 RELEASE_JSON="$(curl -sSL "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null || echo '')"
 
 DOWNLOAD_URL=""
 if [ -n "$RELEASE_JSON" ]; then
-  DOWNLOAD_URL="$(echo "$RELEASE_JSON" | grep -o 'https://[^"]*GitDrive[^"]*'"$ARCH_TAG"'-mac\.zip' | head -n 1 || true)"
+  DOWNLOAD_URL="$(echo "$RELEASE_JSON" | grep -o 'https://[^"]*GitDrive[^"]*'"$ARCH_TAG"'\.dmg' | head -n 1 || true)"
   if [ -z "$DOWNLOAD_URL" ]; then
-    DOWNLOAD_URL="$(echo "$RELEASE_JSON" | grep -o 'https://[^"]*GitDrive[^"]*mac\.zip' | head -n 1 || true)"
+    DOWNLOAD_URL="$(echo "$RELEASE_JSON" | grep -o 'https://[^"]*GitDrive[^"]*\.dmg' | head -n 1 || true)"
   fi
 fi
 
 if [ -z "$DOWNLOAD_URL" ]; then
-  DOWNLOAD_URL="https://github.com/$REPO/releases/latest/download/GitDrive-1.0.0-${ARCH_TAG}-mac.zip"
+  DOWNLOAD_URL="https://github.com/$REPO/releases/latest/download/GitDrive-1.0.2-${ARCH_TAG}.dmg"
 fi
 
-echo "⬇️  Downloading GitDrive..."
-curl -fL --progress-bar "$DOWNLOAD_URL" -o "$ZIP_PATH"
+echo "⬇️  Downloading GitDrive (.dmg)..."
+curl -fL --progress-bar "$DOWNLOAD_URL" -o "$DMG_PATH"
 
-echo "📦 Installing into /Applications/GitDrive.app..."
+echo "📦 Mounting installer and copying to /Applications/GitDrive.app..."
+hdiutil attach "$DMG_PATH" -mountpoint "$MOUNT_POINT" -nobrowse -quiet
 rm -rf /Applications/GitDrive.app
-unzip -q -o "$ZIP_PATH" -d /Applications/
+cp -R "$MOUNT_POINT/GitDrive.app" /Applications/
+hdiutil detach "$MOUNT_POINT" -force -quiet 2>/dev/null || true
 
 echo "🛡️  Configuring macOS security permissions..."
 xattr -cr /Applications/GitDrive.app 2>/dev/null || true

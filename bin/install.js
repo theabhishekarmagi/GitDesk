@@ -129,33 +129,53 @@ async function main() {
   const assets = release && Array.isArray(release.assets) ? release.assets : [];
 
   if (platform === 'darwin') {
-    // macOS Installation
+    // macOS Installation via .dmg
     const isArm = arch === 'arm64';
     const targetArchTag = isArm ? 'arm64' : 'x64';
 
-    let targetAsset = assets.find((a) => a.name.includes(targetArchTag) && a.name.endsWith('-mac.zip'));
+    let targetAsset = assets.find((a) => a.name.includes(targetArchTag) && a.name.endsWith('.dmg'));
     if (!targetAsset) {
-      targetAsset = assets.find((a) => a.name.endsWith('-mac.zip') || a.name.endsWith('.zip'));
+      targetAsset = assets.find((a) => a.name.endsWith('.dmg'));
     }
 
     const downloadUrl = targetAsset
       ? targetAsset.browser_download_url
-      : `https://github.com/${REPO}/releases/latest/download/GitDrive-1.0.0-${targetArchTag}-mac.zip`;
+      : `https://github.com/${REPO}/releases/latest/download/GitDrive-1.0.2-${targetArchTag}.dmg`;
 
-    const tmpZip = path.join(os.tmpdir(), `GitDrive-${Date.now()}.zip`);
-    console.log(`\n⬇️  Downloading GitDrive for macOS...`);
-    await downloadFile(downloadUrl, tmpZip);
+    const tmpDmg = path.join(os.tmpdir(), `GitDrive-${Date.now()}.dmg`);
+    console.log(`\n⬇️  Downloading GitDrive (.dmg) for macOS...`);
+    await downloadFile(downloadUrl, tmpDmg);
 
-    console.log(`📦 Installing into /Applications/GitDrive.app...`);
+    console.log(`📦 Mounting installer and copying to /Applications...`);
+    const mountPoint = path.join(os.tmpdir(), `GitDriveMount-${Date.now()}`);
+    fs.mkdirSync(mountPoint, { recursive: true });
+
     try {
+      execSync(`hdiutil attach "${tmpDmg}" -mountpoint "${mountPoint}" -nobrowse -quiet`);
+
+      const appSource = path.join(mountPoint, 'GitDrive.app');
+      if (!fs.existsSync(appSource)) {
+        throw new Error('GitDrive.app not found inside DMG volume.');
+      }
+
       execSync('rm -rf /Applications/GitDrive.app');
-      execSync(`unzip -q -o "${tmpZip}" -d /Applications/`);
+      execSync(`cp -R "${appSource}" /Applications/`);
+
+      try {
+        execSync(`hdiutil detach "${mountPoint}" -force -quiet`);
+      } catch {}
+      try {
+        fs.rmdirSync(mountPoint);
+      } catch {}
+
       execSync('xattr -cr /Applications/GitDrive.app 2>/dev/null || true');
       execSync('xattr -dr com.apple.quarantine /Applications/GitDrive.app 2>/dev/null || true');
       execSync('codesign --force --deep --sign - /Applications/GitDrive.app 2>/dev/null || true');
-      if (fs.existsSync(tmpZip)) fs.unlinkSync(tmpZip);
+
+      if (fs.existsSync(tmpDmg)) fs.unlinkSync(tmpDmg);
     } catch (e) {
-      console.error(`${colors.red}Failed to extract into /Applications. Try running with sudo if permissions are restricted.${colors.reset}`);
+      try { execSync(`hdiutil detach "${mountPoint}" -force -quiet 2>/dev/null || true`); } catch {}
+      console.error(`${colors.red}Failed to install into /Applications. Try running with sudo if permissions are restricted.${colors.reset}`, e.message);
       process.exit(1);
     }
 

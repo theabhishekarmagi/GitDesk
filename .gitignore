@@ -6,3 +6,5 @@ out
 .env
 .env.local
 *.log
+release
+
